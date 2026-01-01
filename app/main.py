@@ -16,8 +16,8 @@ finally:
     db.close()
 
 app = FastAPI(
-    title="CLASS A",
-    description="UTE",
+    title="SHOES SHOP BABA",
+    description="BABA SHOES SHOP API Documentation",
 )
 
 app.include_router(product_router)
@@ -25,4 +25,4 @@ app.include_router(user_router_router)
 
 @app.get("/home")
 async def root():
-    return {"message": "Hello World class A"}
+    return {"message": "Hello from BABA SHOES SHOP"}
