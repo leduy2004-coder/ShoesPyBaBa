@@ -1,5 +1,5 @@
 from sqlalchemy import Column, String, Float, DateTime, Integer, ForeignKey, JSON
-from sqlalchemy.orm import relationship
+
 from datetime import datetime
 from app.models.base_model import BaseModel
 
@@ -16,9 +16,6 @@ class Order(BaseModel):
     created_at = Column(DateTime, index=True, default=datetime.now)
     updated_at = Column(DateTime, index=True, default=datetime.now, onupdate=datetime.now)
     
-    user = relationship("User", backref="orders")
-    items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
-
 
 class OrderItem(BaseModel):
     __tablename__ = "order_items"
@@ -32,6 +29,5 @@ class OrderItem(BaseModel):
     quantity = Column(Integer, nullable=False)
     price_at_purchase = Column(Float, nullable=False)
     
-    order = relationship("Order", back_populates="items")
-    product = relationship("Product", backref="order_items")
+
 

@@ -1,5 +1,5 @@
 from sqlalchemy import Column, String, Boolean, Integer, ForeignKey
-from sqlalchemy.orm import relationship
+
 from app.models.base_model import BaseModel
 
 
@@ -15,5 +15,5 @@ class Address(BaseModel):
     recipient_name = Column(String(100), nullable=False)
     recipient_phone = Column(String(20), nullable=False)
     
-    user = relationship("User", backref="addresses")
+
 

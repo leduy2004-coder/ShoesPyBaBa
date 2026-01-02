@@ -1,6 +1,6 @@
 from app.models.base_model import BaseModel
 from sqlalchemy import Column, String, Float, DateTime, Integer, ForeignKey, JSON
-from sqlalchemy.orm import relationship
+
 import datetime
 
 class Product(BaseModel):
@@ -17,5 +17,3 @@ class Product(BaseModel):
     variants = Column(JSON, nullable=True)  # List of ProductVariant objects
     deleted_at = Column(DateTime, index=True, nullable=True)
     
-    category = relationship("Category", backref="products")
-    brand = relationship("Brand", backref="products")

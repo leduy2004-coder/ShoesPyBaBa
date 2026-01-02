@@ -1,7 +1,7 @@
 from app.models.base_model import BaseModel
 from sqlalchemy import Column, String, Float, DateTime, Integer, ForeignKey
 from datetime import datetime
-from sqlalchemy.orm import relationship, Session
+from sqlalchemy.orm import Session
 
 class User(BaseModel):
     __tablename__ = "users"
@@ -11,13 +11,14 @@ class User(BaseModel):
     email = Column(String(255), unique=True, index=True)
     password = Column(String(255), index=True)
     gender = Column(String(20), nullable=True)  
+    avatar = Column(String(500), nullable=True)
     phone_number = Column(String(20), nullable=True, index=True) 
     role_id = Column(Integer, ForeignKey("role.id"), nullable=True)
     status = Column(Integer, index=True, default=1)
     created_at = Column(DateTime, index=True, default=datetime.now)
     updated_at = Column(DateTime, index=True, default=datetime.now)
 
-    role = relationship("Role", backref="users")
+
 
 
 def seed_admin(db: Session):
