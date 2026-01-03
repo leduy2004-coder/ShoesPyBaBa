@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException, status
+from fastapi import APIRouter, UploadFile, File, status
 from app.services.cloudinary_service import CloudinaryService
 from app.schemas.file_schema import FileResponse
 

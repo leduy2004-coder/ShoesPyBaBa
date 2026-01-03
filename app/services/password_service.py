@@ -49,3 +49,12 @@ class PasswordService:
         db.commit()
         
         return {"message": "Password reset successfully"}
+
+    @staticmethod
+    def change_password(user_id: int, new_password: str, db: Session):
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        user.password = hash_password(new_password)
+        db.commit()

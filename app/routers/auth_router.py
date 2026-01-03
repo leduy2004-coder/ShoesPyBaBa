@@ -2,27 +2,38 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from app.core.security import require_role
 from app.db.base import get_db
-from app.schemas.user_schemas import RegisterUserSchema, UserSchema, LoginUserSchema, LoginUserResponseSchema
+from app.schemas.user_schemas import RegisterUserSchema, UserSchema, LoginUserSchema, LoginUserResponseSchema, VerifyOtpSchema
 from app.services.auth_service import AuthService
 from app.schemas.base_schema import DataResponse
 from fastapi.responses import RedirectResponse
 from app.core.config import settings
 from urllib.parse import urlencode
-from app.schemas.password_schema import ForgotPasswordSchema, ResetPasswordSchema
+from app.schemas.password_schema import ForgotPasswordOtpSchema, ResetPasswordOtpSchema, ResetPasswordSchema
 from app.services.password_service import PasswordService
+from app.services.user_service import UserService
 
 router = APIRouter()
 
-@router.post("/register", tags=["users"], description="Register a new user", response_model=DataResponse[UserSchema])
+@router.post("/register", tags=["auth"], description="Register a new user with OTP", response_model=DataResponse[UserSchema])
 async def register_user(data: RegisterUserSchema, db: Session = Depends(get_db)):
-    auth_service = AuthService(db)
     try:
-        user = auth_service.register_user(data)
-        return DataResponse.custom_response(code="201", message="Register user success", data=user)
+        user = await UserService.register_with_otp(data, db)
+        return DataResponse.custom_response(code="201", message="OTP sent to email. Please verify to complete registration.", data=user)
+    except HTTPException as e:
+        return DataResponse.custom_response(code=str(e.status_code), message=e.detail, data=None)
     except Exception as e:
-        return DataResponse.custom_response(code="500", message="Register user failed", data=None)
+        # return DataResponse.custom_response(code="500", message="Register user failed", data=None)
+        return DataResponse.custom_response(code="500", message=str(e), data=None)
 
-@router.post("/login", tags=["users"], description="Login a user", response_model=DataResponse[LoginUserResponseSchema])
+@router.post("/verify-otp", tags=["auth"], description="Verify OTP for registration", response_model=DataResponse[UserSchema])
+async def verify_otp(data: VerifyOtpSchema, db: Session = Depends(get_db)):
+    try:
+        user = await UserService.verify_otp(data.email, data.otp, db)
+        return DataResponse.custom_response(code="200", message="Email verified successfully", data=user)
+    except HTTPException as e:
+        return DataResponse.custom_response(code=str(e.status_code), message=e.detail, data=None)
+
+@router.post("/login", tags=["auth"], description="Login a user", response_model=DataResponse[LoginUserResponseSchema])
 async def login_user(data: LoginUserSchema, db: Session = Depends(get_db)):
     auth_service = AuthService(db)
     try:
@@ -80,35 +91,57 @@ async def refresh_access_token(refresh_token: str, db: Session = Depends(get_db)
             raise e
         return DataResponse.custom_response(code="500", message=str(e), data=None)
 
+
 @router.post("/forgot-password", tags=["auth"])
 async def forgot_password(
-    data: ForgotPasswordSchema,
+    data: ForgotPasswordOtpSchema,
     db: Session = Depends(get_db)
 ):
-    token = PasswordService.forgot_password(data.email, db)
+    try:
+        result = await PasswordService.forgot_password_otp(data.email, db)
+        return DataResponse.custom_response(
+            code="200",
+            message="OTP sent to email",
+            data=result
+        )
+    except HTTPException as e:
+        return DataResponse.custom_response(code=str(e.status_code), message=e.detail, data=None)
 
-    return DataResponse.custom_response(
-        code="200",
-        message="Reset token generated (DEV only)",
-        data={
-            "reset_token": token
-        }
-    )
 
-@router.post("/reset-password", tags=["auth"])
+@router.post("/reset-password-otp", tags=["auth"])
 async def reset_password(
+    data: ResetPasswordOtpSchema,
+    db: Session = Depends(get_db)
+):
+    try:
+        result = await PasswordService.reset_password_with_otp(
+            data.email,
+            data.otp,
+            data.new_password,
+            db
+        )
+        return DataResponse.custom_response(
+            code="200",
+            message="Password reset successfully",
+            data=result
+        )
+    except HTTPException as e:
+        return DataResponse.custom_response(code=str(e.status_code), message=e.detail, data=None)
+
+@router.post("/change-password", tags=["auth"])
+async def change_password(
     data: ResetPasswordSchema,
     db: Session = Depends(get_db),
     current_user: dict = Depends(require_role(["user", "admin"]))
 ):
-    PasswordService.reset_password(
-        data.token,
+    PasswordService.change_password(
+        current_user["user_id"],
         data.new_password,
         db
     )
 
     return DataResponse.custom_response(
         code="200",
-        message="Password reset successfully",
+        message="Password changed successfully",
         data=None
     )

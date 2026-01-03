@@ -21,11 +21,7 @@ class User(BaseModel):
     avatar = Column(String(500), nullable=True)
     phone_number = Column(String(20), nullable=True, index=True) 
     role_id = Column(Integer, ForeignKey("role.id"), nullable=True)
-
-    # 0 = chưa xác thực | 1 = đã xác thực
     status = Column(Integer, index=True, default=0)
-
-    # 👉 OTP
     otp_code = Column(String(255), nullable=True)
     otp_expired_at = Column(DateTime, nullable=True)
     otp_type = Column(Enum(OTPType), nullable=True)

@@ -11,7 +11,7 @@ class UserRepository:
             self.db.query(User)
             .filter(
                 User.email == email,
-                User.status == True
+                User.status == 1
             )
             .first()
         )
