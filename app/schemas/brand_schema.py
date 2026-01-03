@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 
@@ -11,6 +11,15 @@ class BrandSchema(BaseModel):
     description: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+
+
+class BrandPaginationSchema(BaseModel):
+    items: List[BrandSchema]
+    total: int
+    page: int
+    limit: int
+    total_pages: int
+
 
 
 class CreateBrandSchema(BaseModel):

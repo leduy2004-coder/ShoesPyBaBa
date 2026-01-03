@@ -5,6 +5,9 @@ from app.models import Base
 from app.routers.product_router import router as product_router
 from app.routers.user_router import router as user_router_router
 from app.routers.auth_router import router as auth_router
+from app.routers.upload_router import router as upload_router
+from app.routers.brand_router import router as brand_router
+from app.routers.category_router import router as category_router
 from app.models.role_model import seed_roles
 from app.models.user_model import seed_admin
 
@@ -29,6 +32,9 @@ setup_cors(app)
 app.include_router(product_router)
 app.include_router(user_router_router)
 app.include_router(auth_router)
+app.include_router(upload_router)
+app.include_router(brand_router)
+app.include_router(category_router)
 
 @app.get("/home")
 async def root():
