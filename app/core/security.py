@@ -6,6 +6,9 @@ import jwt
 # Use argon2 (Windows-friendly) with bcrypt as fallback
 pwd_context = CryptContext(schemes=["argon2", "bcrypt"], deprecated="auto")
 
+RESET_SECRET_KEY = "RESET_SECRET_KEY"
+RESET_TOKEN_EXPIRE_MINUTES = 15
+
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
 
@@ -21,3 +24,11 @@ def create_access_token(user_id: int) -> str:
     
     token = jwt.encode(payload, settings.SECRET_KEY, settings.ALGORITHM)
     return token
+
+def create_reset_token(user_id: str):
+    payload = {
+        "sub": str(user_id),
+        "type": "reset",
+        "exp": datetime.utcnow() + timedelta(minutes=RESET_TOKEN_EXPIRE_MINUTES)
+    }
+    return jwt.encode(payload, RESET_SECRET_KEY, algorithm="HS256")
