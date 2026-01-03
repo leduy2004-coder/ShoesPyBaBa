@@ -21,3 +21,6 @@ class UserRepository:
         Note: The object should be modified before calling this.
         """
         self.db.commit()
+
+    def get_by_id(self, user_id: int) -> Optional[User]:
+        return self.db.query(User).filter(User.id == user_id).first()
