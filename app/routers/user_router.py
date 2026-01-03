@@ -1,5 +1,7 @@
 from fastapi import APIRouter
-from app.schemas.user_schemas import RegisterUserSchema, UserSchema, LoginUserSchema, LoginUserResponseSchema
+from app.schemas.user_schemas import RegisterUserSchema, UserSchema, LoginUserSchema, LoginUserResponseSchema, UserProfileUpdate, UserProfileResponse
+from app.schemas.common_schema import ResponseSchema
+from app.middleware.authenticate import authenticate as get_current_user
 from app.models.user_model import User
 from app.db.base import get_db
 from sqlalchemy.orm import Session
@@ -94,3 +96,17 @@ async def refresh_access_token(refresh_token: str):
         if isinstance(e, HTTPException):
             raise e
         return DataResponse.custom_response(code="500", message=str(e), data=None)
+
+@router.put("/update-profile", tags=["users"], description="Update user profile", response_model=ResponseSchema[UserProfileResponse])
+def update_user_profile(
+    data: UserProfileUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    service = UserService(db)
+    updated_profile = service.update_user_profile(current_user, data)
+    return ResponseSchema.custom_response(
+        code="200",
+        message="Update user profile success",
+        data=updated_profile
+    )

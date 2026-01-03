@@ -30,8 +30,6 @@ class ProductRepository:
             query = query.order_by(asc(Product.price))
         elif sort_by == "price_desc":
             query = query.order_by(desc(Product.price))
-        elif sort_by == "newest":
-            query = query.order_by(desc(Product.created_at))
         else:
              query = query.order_by(desc(Product.id))
 

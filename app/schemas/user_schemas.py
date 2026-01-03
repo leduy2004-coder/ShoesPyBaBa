@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from pydantic import field_validator
 from typing import Optional
 import re
@@ -46,3 +46,23 @@ class LoginUserResponseSchema(BaseModel):
 class TokenPayload(BaseModel):
     user_id: int
     exp: int
+
+class UserProfileUpdate(BaseModel):
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+    phone_number: Optional[str] = None
+    street_address: Optional[str] = None
+    ward: Optional[str] = None
+    province_city: Optional[str] = None
+
+class UserProfileResponse(BaseModel):
+    id: int
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+    phone_number: Optional[str]
+    street_address: Optional[str] = None
+    ward: Optional[str] = None
+    province_city: Optional[str] = None
+    
+    class Config:
+        from_attributes = True
