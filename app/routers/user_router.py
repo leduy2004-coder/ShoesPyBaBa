@@ -12,6 +12,13 @@ from app.core.config import settings
 import httpx
 from urllib.parse import urlencode
 from app.services.user_service import UserService
+from app.schemas.password_schema import (
+    ForgotPasswordSchema,
+    ResetPasswordSchema
+)
+from app.services.password_service import PasswordService
+from app.core.config import settings
+
 
 router = APIRouter()
 
@@ -94,3 +101,37 @@ async def refresh_access_token(refresh_token: str):
         if isinstance(e, HTTPException):
             raise e
         return DataResponse.custom_response(code="500", message=str(e), data=None)
+    
+@router.post("/forgot-password", tags=["auth"])
+async def forgot_password(
+    data: ForgotPasswordSchema,
+    db: Session = Depends(get_db)
+):
+    token = PasswordService.forgot_password(data.email, db)
+
+    return DataResponse.custom_response(
+        code="200",
+        message="Reset token generated (DEV only)",
+        data={
+            "reset_token": token
+        }
+    )
+
+
+@router.post("/reset-password", tags=["auth"])
+async def reset_password(
+    data: ResetPasswordSchema,
+    db: Session = Depends(get_db)
+):
+    PasswordService.reset_password(
+        data.token,
+        data.new_password,
+        db
+    )
+
+    return DataResponse.custom_response(
+        code="200",
+        message="Password reset successfully",
+        data=None
+    )
+
