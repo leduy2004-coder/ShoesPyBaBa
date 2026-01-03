@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+
 from app.db.base import get_db, engine, SessionLocal
 from app.models import Base
 from app.routers.product_router import router as product_router
@@ -22,18 +22,8 @@ app = FastAPI(
 )
 
 # CORS configuration for frontend
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",  # React default
-        "http://localhost:5173",  # Vite default
-        "http://localhost:8080",  # Vite default
-        # Add your frontend URL here
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+from app.middleware.cors import setup_cors
+setup_cors(app)
 
 app.include_router(product_router)
 app.include_router(user_router_router)
