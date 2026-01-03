@@ -1,6 +1,10 @@
 import os
+import logging
 from dotenv import load_dotenv
 load_dotenv()
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 class Settings:
     SQLALCHEMY_DATABASE_URL: str = os.getenv("SQLALCHEMY_DATABASE_URL", "sqlite:///./dev.db")
@@ -13,5 +17,6 @@ class Settings:
     GOOGLE_AUTH_ENDPOINT: str = os.getenv("GOOGLE_AUTH_ENDPOINT")
     GOOGLE_TOKEN_ENDPOINT: str = os.getenv("GOOGLE_TOKEN_ENDPOINT")
     GOOGLE_USERINFO_ENDPOINT: str = os.getenv("GOOGLE_USERINFO_ENDPOINT")
+    RESET_TOKEN_EXPIRE_MINUTES: int = os.getenv("RESET_TOKEN_EXPIRE_MINUTES")
 
 settings = Settings()

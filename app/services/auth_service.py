@@ -6,10 +6,15 @@ from app.core.config import settings
 from fastapi import HTTPException
 import httpx
 from app.repositories.user_repository import UserRepository 
+from app.core.config import logger
+
+from app.repositories.role_repository import RoleRepository
+from app.services.role_service import RoleService
 
 class AuthService:
     def __init__(self, db: Session):
         self.user_repo = UserRepository(db)
+        self.role_service = RoleService(db)
         self.db = db
 
     def register_user(self, data: RegisterUserSchema) -> User:
@@ -19,20 +24,30 @@ class AuthService:
             email=data.email,
             password=password,
             gender=data.gender,
-            phone_number=data.phone_number
+            phone_number=data.phone_number,
+            status=False
         )
         return self.user_repo.create_user(user)
 
     def login_user(self, data: LoginUserSchema) -> LoginUserResponseSchema:
+   
         user = self.user_repo.get_by_email(data.email)
         if not user:
             raise HTTPException(status_code=401, detail="Invalid email or password")
-        
+    
         if not verify_password(data.password, user.password):
             raise HTTPException(status_code=401, detail="Invalid email or password")
-        
-        token = create_access_token(user.id)
-        return LoginUserResponseSchema(access_token=token, token_type="Bearer")
+        logger.info("Login attempt with email=%s", user.role_id)
+
+        role_name = self.role_service.get_role_name_by_id(user.role_id) if user.role_id else None
+        logger.info("Role name: %s", role_name)
+        token = create_access_token(user.id, role_name)
+
+        return LoginUserResponseSchema(
+            access_token=token, 
+            token_type="Bearer",
+            role=role_name
+        )
 
     async def google_login(self, code: str) -> LoginUserResponseSchema:
         data = {
@@ -61,7 +76,7 @@ class AuthService:
                 raise HTTPException(status_code=400, detail="Email not found in Google account")
 
             # Check if user exists
-            user = self.auth_repo.get_by_email(email)
+            user = self.user_repo.get_by_email(email)
             
             if not user:
                 # Create new user
@@ -71,7 +86,7 @@ class AuthService:
                     avatar=userinfo.get("picture"),
                     password=hash_password("google_oauth_user"), 
                     role_id=2, 
-                    status=1,
+                    status=True,
                     gender="Other"
                 )
                 user = self.user_repo.create_user(user)
@@ -82,8 +97,9 @@ class AuthService:
                     self.db.commit() # AuthRepo doesn't have update method yet, using db directly or add update to repo
                     self.db.refresh(user)
 
-            token = create_access_token(user.id)
-            return LoginUserResponseSchema(access_token=token, token_type="Bearer")
+            role_name = self.role_service.get_role_name_by_id(user.role_id) if user.role_id else "user"
+            token = create_access_token(user.id, role_name)
+            return LoginUserResponseSchema(access_token=token, token_type="Bearer", role=role_name)
 
     async def refresh_google_token(self, refresh_token: str):
         if not refresh_token:

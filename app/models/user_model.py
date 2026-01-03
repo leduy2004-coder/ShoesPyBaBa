@@ -1,5 +1,5 @@
 from app.models.base_model import BaseModel
-from sqlalchemy import Column, String, Float, DateTime, Integer, ForeignKey
+from sqlalchemy import Column, String, Float, DateTime, Integer, ForeignKey, Boolean
 from datetime import datetime
 from sqlalchemy.orm import Session
 
@@ -14,12 +14,9 @@ class User(BaseModel):
     avatar = Column(String(500), nullable=True)
     phone_number = Column(String(20), nullable=True, index=True) 
     role_id = Column(Integer, ForeignKey("role.id"), nullable=True)
-    status = Column(Integer, index=True, default=1)
+    status = Column(Boolean, default=True, index=True)
     created_at = Column(DateTime, index=True, default=datetime.now)
     updated_at = Column(DateTime, index=True, default=datetime.now)
-
-
-
 
 def seed_admin(db: Session):
     """Create default admin user if not exists"""
@@ -33,7 +30,7 @@ def seed_admin(db: Session):
             email="admin@yopmail.com",
             password=hash_password("admin"),
             role_id=1,  # admin role
-            status=1
+            status=True
         )
         db.add(admin)
         db.commit()

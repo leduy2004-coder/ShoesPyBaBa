@@ -3,7 +3,6 @@ from app.models.user_model import User
 from app.core.config import settings
 from app.schemas.user_schemas import TokenPayload
 from fastapi import HTTPException, Depends
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import jwt
 from pydantic import ValidationError
 from app.repositories.user_repository import UserRepository
