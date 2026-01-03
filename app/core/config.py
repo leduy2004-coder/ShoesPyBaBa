@@ -19,4 +19,11 @@ class Settings:
     GOOGLE_USERINFO_ENDPOINT: str = os.getenv("GOOGLE_USERINFO_ENDPOINT")
     RESET_TOKEN_EXPIRE_MINUTES: int = os.getenv("RESET_TOKEN_EXPIRE_MINUTES")
 
+    # Email settings
+    EMAIL_HOST: str = os.getenv("EMAIL_HOST", "smtp.gmail.com")
+    EMAIL_PORT: int = int(os.getenv("EMAIL_PORT", "587"))
+    EMAIL_USERNAME: str = os.getenv("EMAIL_USERNAME")
+    EMAIL_PASSWORD: str = os.getenv("EMAIL_PASSWORD")
+    EMAIL_FROM: str = os.getenv("EMAIL_FROM", EMAIL_USERNAME)
+
 settings = Settings()

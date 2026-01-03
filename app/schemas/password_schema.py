@@ -1,8 +1,9 @@
 from pydantic import BaseModel, EmailStr
 
-class ForgotPasswordSchema(BaseModel):
+class ForgotPasswordOtpSchema(BaseModel):
     email: EmailStr
 
-class ResetPasswordSchema(BaseModel):
-    token: str
+class ResetPasswordOtpSchema(BaseModel):
+    email: EmailStr
+    otp: str
     new_password: str
