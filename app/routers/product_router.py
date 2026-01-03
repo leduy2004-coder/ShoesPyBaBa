@@ -1,9 +1,14 @@
-from fastapi import APIRouter, Depends
+from typing import Optional
+from fastapi import APIRouter, Depends, Query
 from app.db.base import get_db
 from sqlalchemy.orm import Session
 from app.models.product_model import Product
-from app.schemas.product_schema import ProductSchema, CreateProductSchema, UpdateProductSchema
+from app.schemas.product_schema import ProductSchema, CreateProductSchema, UpdateProductSchema, ProductResponse, ProductFilter
 from app.schemas.base_schema import DataResponse
+from app.schemas.common_schema import PaginationSchema, ResponseSchema
+from app.services.product_service import ProductService
+from app.models.user_model import User
+from app.middleware.authenticate import authenticate as get_current_user
 from datetime import datetime
 
 router = APIRouter()
@@ -50,3 +55,43 @@ def update_product(product_id: int, data: UpdateProductSchema, db: Session = Dep
     db.commit()
     db.refresh(product)
     return DataResponse.custom_response(code="200", message="Update product by id", data=product)
+
+@router.get("/products", tags=["products"], description="Get products with pagination and filters", response_model=ResponseSchema[list[ProductResponse]])
+def search_products(
+    page: int = Query(1, ge=1),
+    size: int = Query(10, ge=1, le=100),
+    keyword: Optional[str] = None,
+    category_id: Optional[int] = None,
+    min_price: Optional[float] = None,
+    max_price: Optional[float] = None,
+    sort_by: Optional[str] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    service = ProductService(db)
+    filters = {
+        "keyword": keyword, "category_id": category_id,
+        "min_price": min_price, "max_price": max_price, "sort_by": sort_by
+    }
+    
+    data, pagination = service.get_products(page, size, filters)
+    
+    return ResponseSchema(
+        data=data,
+        message="Lấy danh sách sản phẩm thành công",
+        pagination=pagination
+    )
+
+@router.get("/products/{product_id}", tags=["products"], description="Get product detail by id", response_model=ResponseSchema[ProductResponse])
+def get_product_detail(
+    product_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    service = ProductService(db)
+    product = service.get_product_detail(product_id)
+    
+    if not product:
+        raise HTTPException(status_code=404, detail="Sản phẩm không tồn tại")
+        
+    return ResponseSchema(data=product, message="Lấy chi tiết thành công")
