@@ -46,3 +46,15 @@ class LoginUserResponseSchema(BaseModel):
 class TokenPayload(BaseModel):
     user_id: int
     exp: int
+
+class VerifyOtpSchema(BaseModel):
+    email: str
+    otp: str
+
+class ForgotPasswordOtpSchema(BaseModel):
+    email: str
+
+class ResetPasswordOtpSchema(BaseModel):
+    email: str
+    otp: str
+    new_password: str
