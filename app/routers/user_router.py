@@ -3,14 +3,10 @@ from app.schemas.user_schemas import RegisterUserSchema, UserSchema, LoginUserSc
 from app.models.user_model import User
 from app.db.base import get_db
 from sqlalchemy.orm import Session
-from fastapi import Depends, Request, HTTPException
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi import Depends
 from app.schemas.base_schema import DataResponse
-from app.core.security import hash_password, verify_password, create_access_token
-from app.middleware.authenticate import authenticate
-from app.core.config import settings
-import httpx
-from urllib.parse import urlencode
+from app.core.security import security
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.services.user_service import UserService
 from app.schemas.password_schema import (
     ForgotPasswordOtpSchema,
@@ -57,9 +53,9 @@ async def login_user(data: LoginUserSchema, db: Session = Depends(get_db)):
     
     return DataResponse.custom_response(code="200", message="Login user success", data=LoginUserResponseSchema(access_token=token, token_type="Bearer"))
 
-@router.get("/profile", tags=["users"], description="Get current user", response_model=DataResponse[UserSchema], dependencies=[Depends(authenticate)])
-async def get_current_user(current_user: User = Depends(authenticate)):
-    return DataResponse.custom_response(code="200", message="Get current user success", data=current_user)
+# @router.get("/profile", tags=["users"], description="Get current user", response_model=DataResponse[UserSchema], dependencies=[Depends(authenticate)])
+# async def get_current_user(current_user: User = Depends(authenticate)):
+#     return DataResponse.custom_response(code="200", message="Get current user success", data=current_user)
 
 @router.get("/login/google", tags=["auth"], description="Initiate Google Login")
 def login_google():
@@ -145,4 +141,14 @@ async def reset_password(
         )
     except HTTPException as e:
         return DataResponse.custom_response(code=str(e.status_code), message=e.detail, data=None)
+
+
+
+@router.get("/profile", tags=["users"], description="Get current user", response_model=DataResponse[UserSchema])
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)):
+    user_service = UserService(db)
+    current_user = user_service.get_profile(credentials)
+    return DataResponse.custom_response(code="200", message="Get current user success", data=current_user)
+
+
 

@@ -1,5 +1,5 @@
 from app.models.base_model import BaseModel
-from sqlalchemy import Column, String, Float, DateTime, Integer, ForeignKey
+from sqlalchemy import Column, String, Float, DateTime, Integer, ForeignKey, Boolean
 from datetime import datetime
 from sqlalchemy.orm import Session
 from sqlalchemy import Enum
@@ -49,7 +49,7 @@ def seed_admin(db: Session):
             email="admin@yopmail.com",
             password=hash_password("admin"),
             role_id=1,  # admin role
-            status=1
+            status=True
         )
         db.add(admin)
         db.commit()
