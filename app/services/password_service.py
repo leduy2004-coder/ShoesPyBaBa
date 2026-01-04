@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from app.models.user_model import User, OTPType
-from app.core.security import hash_password
+from app.core.security import hash_password, verify_password
 from app.services.email_service import EmailService
 from datetime import datetime
 
@@ -49,3 +49,17 @@ class PasswordService:
         db.commit()
         
         return {"message": "Password reset successfully"}
+    
+    @staticmethod
+    async def change_password(current_user, data, db):
+        if not verify_password(data.old_password, current_user.password):
+            raise HTTPException(status_code=400, detail="Mật khẩu cũ không chính xác")
+        
+        if data.new_password != data.confirm_password:
+            raise HTTPException(status_code=400, detail="Mật khẩu mới và xác nhận mật khẩu không khớp")
+        
+        current_user.password = hash_password(data.new_password)
+        db.commit()
+        db.refresh(current_user)
+        
+        return True
