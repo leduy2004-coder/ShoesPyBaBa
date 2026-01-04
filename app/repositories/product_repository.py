@@ -1,13 +1,21 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import desc, asc
+from sqlalchemy import desc, asc, func
 from app.models.product_model import Product
+from app.models.order_model import OrderItem, Order
 
 class ProductRepository:
     def __init__(self, db: Session):
         self.db = db
 
     def get_list(self, page: int, size: int, filters: dict):
-        query = self.db.query(Product).filter(Product.status == 'active')
+        query = self.db.query(
+            Product,
+            func.coalesce(func.sum(OrderItem.quantity), 0).label("sold_quantity")
+            ).outerjoin(
+                OrderItem, Product.id == OrderItem.product_id
+            ).outerjoin(
+                Order, (OrderItem.order_id == Order.id) & (Order.status == 'delivered')
+        ).filter(Product.status == 'active')
 
         if filters.get("keyword"):
             search = f"%{filters['keyword']}%"

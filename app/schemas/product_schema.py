@@ -55,6 +55,7 @@ class ProductResponse(BaseModel):
     status: str = "active"
     image_urls: Optional[List[str]] = None
     variants: Optional[List[ProductVariantSchema]] = None
+    sold_count: int = 0
     
     class Config:
         from_attributes = True
