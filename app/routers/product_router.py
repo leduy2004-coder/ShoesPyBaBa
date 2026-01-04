@@ -83,7 +83,7 @@ def search_products(
         pagination=pagination
     )
 
-@router.get("/products/{product_id}", tags=["products"], description="Get product detail by id", response_model=ResponseSchema[ProductResponse])
+@router.get("/products/{product_id}", tags=["products"], description="Get product detail by id", response_model=DataResponse[ProductResponse])
 def get_product_detail(
     product_id: int,
     db: Session = Depends(get_db),
