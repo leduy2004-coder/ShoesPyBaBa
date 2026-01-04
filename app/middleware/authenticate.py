@@ -2,7 +2,8 @@
 import jwt
 from app.core import security
 from app.core.config import settings
-from fastapi import Depends, HTTPException, HTTPAuthorizationCredentials
+from fastapi import Depends, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials 
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from app.db.base import get_db
