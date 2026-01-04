@@ -3,6 +3,9 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime
 
 
+from app.schemas.file_schema import FileProductResponse
+
+
 class ProductVariantSchema(BaseModel):
     color: str
     size: int
@@ -19,9 +22,17 @@ class ProductSchema(BaseModel):
     category_id: Optional[int] = None
     brand_id: Optional[int] = None
     status: str = "active"
-    image_urls: Optional[List[str]] = None
+    image_urls: Optional[List[FileProductResponse]] = None
     variants: Optional[List[Dict[str, Any]]] = None
     deleted_at: Optional[datetime] = None
+
+
+class ProductPaginationSchema(BaseModel):
+    items: List[ProductSchema]
+    total: int
+    page: int
+    limit: int
+    total_pages: int
 
 
 class CreateProductSchema(BaseModel):
@@ -31,7 +42,7 @@ class CreateProductSchema(BaseModel):
     category_id: Optional[int] = None
     brand_id: Optional[int] = None
     status: str = "active"
-    image_urls: Optional[List[str]] = None
+    image_urls: Optional[List[FileProductResponse]] = None
     variants: Optional[List[ProductVariantSchema]] = None
 
 
@@ -42,5 +53,5 @@ class UpdateProductSchema(BaseModel):
     category_id: Optional[int] = None
     brand_id: Optional[int] = None
     status: Optional[str] = None
-    image_urls: Optional[List[str]] = None
+    image_urls: Optional[List[FileProductResponse]] = None
     variants: Optional[List[ProductVariantSchema]] = None

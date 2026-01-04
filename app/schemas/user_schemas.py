@@ -42,6 +42,7 @@ class LoginUserSchema(BaseModel):
 class LoginUserResponseSchema(BaseModel):
     access_token: str
     token_type: str = "Bearer"
+    role: str
 
 class TokenPayload(BaseModel):
     user_id: int
