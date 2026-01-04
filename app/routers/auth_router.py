@@ -10,14 +10,14 @@ from app.core.config import settings
 from urllib.parse import urlencode
 from app.schemas.password_schema import ForgotPasswordOtpSchema, ResetPasswordOtpSchema, ResetPasswordSchema
 from app.services.password_service import PasswordService
-from app.services.user_service import UserService
+from app.services.auth_service import AuthService
 
 router = APIRouter()
 
 @router.post("/register", tags=["auth"], description="Register a new user with OTP", response_model=DataResponse[UserSchema])
 async def register_user(data: RegisterUserSchema, db: Session = Depends(get_db)):
     try:
-        user = await UserService.register_with_otp(data, db)
+        user = await AuthService.register_with_otp(data, db)
         return DataResponse.custom_response(code="201", message="OTP sent to email. Please verify to complete registration.", data=user)
     except HTTPException as e:
         return DataResponse.custom_response(code=str(e.status_code), message=e.detail, data=None)
@@ -28,7 +28,7 @@ async def register_user(data: RegisterUserSchema, db: Session = Depends(get_db))
 @router.post("/verify-otp", tags=["auth"], description="Verify OTP for registration", response_model=DataResponse[UserSchema])
 async def verify_otp(data: VerifyOtpSchema, db: Session = Depends(get_db)):
     try:
-        user = await UserService.verify_otp(data.email, data.otp, db)
+        user = await AuthService.verify_otp(data.email, data.otp, db)
         return DataResponse.custom_response(code="200", message="Email verified successfully", data=user)
     except HTTPException as e:
         return DataResponse.custom_response(code=str(e.status_code), message=e.detail, data=None)

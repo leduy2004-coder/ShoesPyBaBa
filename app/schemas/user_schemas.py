@@ -1,6 +1,7 @@
 from pydantic import BaseModel, ConfigDict
 from pydantic import field_validator
 from typing import Optional
+from enum import Enum
 import re
 
 class UserSchema(BaseModel):
@@ -42,7 +43,7 @@ class LoginUserSchema(BaseModel):
 class LoginUserResponseSchema(BaseModel):
     access_token: str
     token_type: str = "Bearer"
-    role: str
+    role: Optional[str] = None
 
 class TokenPayload(BaseModel):
     user_id: int
@@ -59,3 +60,8 @@ class ResetPasswordOtpSchema(BaseModel):
     email: str
     otp: str
     new_password: str
+
+class OTPType(str, Enum):
+    # Member (Tên) = "Value" (Giá trị thực tế trong DB/Request)
+    REGISTER = "REGISTER"
+    RESET = "RESET"

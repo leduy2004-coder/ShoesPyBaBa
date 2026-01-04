@@ -7,6 +7,9 @@ from fastapi import HTTPException
 import httpx
 from app.repositories.user_repository import UserRepository 
 from app.core.config import logger
+from datetime import datetime, timedelta, timezone
+from app.services.email_service import EmailService
+
 
 from app.repositories.role_repository import RoleRepository
 from app.services.role_service import RoleService
@@ -39,7 +42,7 @@ class AuthService:
             raise HTTPException(status_code=401, detail="Invalid email or password")
         logger.info("Login attempt with email=%s", user.role_id)
 
-        role_name = self.role_service.get_role_name_by_id(user.role_id) if user.role_id else None
+        role_name = self.role_service.get_role_name_by_id(user.role_id) if user.role_id else "user"
         logger.info("Role name: %s", role_name)
         token = create_access_token(user.id, role_name)
 
