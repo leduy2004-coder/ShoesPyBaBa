@@ -53,13 +53,20 @@ class PasswordService:
     @staticmethod
     async def change_password(current_user, data, db):
         if not verify_password(data.old_password, current_user.password):
-            raise HTTPException(status_code=400, detail="Mật khẩu cũ không chính xác")
-        
+            raise HTTPException(
+                status_code=400,
+                detail="The old password is incorrect"
+            )
+
         if data.new_password != data.confirm_password:
-            raise HTTPException(status_code=400, detail="Mật khẩu mới và xác nhận mật khẩu không khớp")
-        
+            raise HTTPException(
+                status_code=400,
+                detail="The new password and confirmation password do not match"
+            )
+
         current_user.password = hash_password(data.new_password)
         db.commit()
         db.refresh(current_user)
-        
+
         return True
+
