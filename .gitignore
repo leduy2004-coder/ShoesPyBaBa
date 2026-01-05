@@ -13,6 +13,9 @@ __pycache__/
 *.pyo
 *.pyd
 
+#database files
+*.db
+
 # Distribution / packaging
 .Python
 build/

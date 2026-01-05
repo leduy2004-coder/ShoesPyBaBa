@@ -1,7 +1,14 @@
 from app.models.base_model import BaseModel
-from sqlalchemy import Column, String, Float, DateTime, Integer, ForeignKey
+from sqlalchemy import Column, String, Float, DateTime, Integer, ForeignKey, Boolean
 from datetime import datetime
 from sqlalchemy.orm import Session
+from sqlalchemy import Enum
+import enum
+
+class OTPType(enum.Enum):
+    REGISTER = "REGISTER"
+    RESET = "RESET"
+
 
 class User(BaseModel):
     __tablename__ = "users"
@@ -14,9 +21,14 @@ class User(BaseModel):
     avatar = Column(String(500), nullable=True)
     phone_number = Column(String(20), nullable=True, index=True) 
     role_id = Column(Integer, ForeignKey("role.id"), nullable=True)
-    status = Column(Integer, index=True, default=1)
+    status = Column(Integer, index=True, default=0)
+    otp_code = Column(String(255), nullable=True)
+    otp_expired_at = Column(DateTime, nullable=True)
+    otp_type = Column(Enum(OTPType), nullable=True)
+
     created_at = Column(DateTime, index=True, default=datetime.now)
     updated_at = Column(DateTime, index=True, default=datetime.now)
+
 
 
 
@@ -33,7 +45,7 @@ def seed_admin(db: Session):
             email="admin@yopmail.com",
             password=hash_password("admin"),
             role_id=1,  # admin role
-            status=1
+            status=True
         )
         db.add(admin)
         db.commit()

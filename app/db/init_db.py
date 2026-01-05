@@ -12,7 +12,7 @@ def seed_roles(db: Session):
         roles = [
             Role(id=1, name="admin", description="Administrator with full access"),
             Role(id=2, name="user", description="Regular user with limited access")
-        ]
+        ] 
         
         db.add_all(roles)
         db.commit()
