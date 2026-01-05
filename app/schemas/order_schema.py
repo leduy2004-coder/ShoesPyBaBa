@@ -42,9 +42,51 @@ class OrderSchema(BaseModel):
     order_date: datetime
     total_amount: float
     status: str
+    payment_status: str
+    payment_intent_id: Optional[str] = None
+    payment_method: str
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     items: Optional[List[OrderItemSchema]] = None
+
+
+class DirectOrderItemSchema(BaseModel):
+    """Schema for direct order item (buy now)"""
+    product_id: int
+    quantity: int
+    size: Optional[int] = None
+    color: Optional[str] = None
+
+
+class CreateDirectOrderSchema(BaseModel):
+    """Schema for creating order directly from products (buy now)"""
+    items: List[DirectOrderItemSchema]
+    delivery_address: DeliveryAddressSchema
+
+
+class CreateOrderFromCartSchema(BaseModel):
+    """Schema for creating order from cart"""
+    delivery_address: DeliveryAddressSchema
+
+
+class OrderSearchSchema(BaseModel):
+    """Schema for order search filters"""
+    user_id: Optional[int] = None
+    status: Optional[str] = None
+    payment_status: Optional[str] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    page: int = 1
+    limit: int = 10
+
+
+class OrderHistorySchema(BaseModel):
+    """Schema for admin order history"""
+    orders: List[OrderSchema]
+    total: int
+    page: int
+    limit: int
+    total_pages: int
 
 
 class CreateOrderSchema(BaseModel):

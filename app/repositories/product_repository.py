@@ -48,3 +48,36 @@ class ProductRepository:
     def delete(self, product: Product) -> None:
         product.deleted_at = datetime.now()
         self.db.commit()
+
+    @staticmethod
+    def decrement_stock(db: Session, product_id: int, quantity: int, size: Optional[int] = None, color: Optional[str] = None):
+        """Decrement stock quantity for a product variant"""
+        product = db.query(Product).filter(Product.id == product_id).first()
+        if not product:
+            return False
+            
+        if product.variants:
+            # Update variant stock
+            updated_variants = []
+            variant_found = False
+            for v in product.variants:
+                if (size is None or v.get('size') == size) and (color is None or v.get('color') == color):
+                    current_stock = v.get('stock_quantity', 0)
+                    v['stock_quantity'] = max(0, current_stock - quantity)
+                    variant_found = True
+                updated_variants.append(v)
+            
+            if variant_found:
+                # Use flag_modified or just re-assign to trigger SQLAlchemy update for JSON
+                from sqlalchemy.orm.attributes import flag_modified
+                product.variants = updated_variants
+                flag_modified(product, "variants")
+                
+                # Check if total stock is 0 to update status
+                total_stock = sum(v.get('stock_quantity', 0) for v in product.variants)
+                if total_stock <= 0:
+                    product.status = "out_of_stock"
+                
+                db.commit()
+                return True
+        return False

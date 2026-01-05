@@ -6,6 +6,7 @@ from app.models.address_model import Address
 from app.models.brand_model import Brand
 from app.models.category_model import Category
 from app.models.order_model import Order, OrderItem
+from app.models.cart_model import Cart, CartItem
 
 __all__ = [
     "Base",
@@ -18,4 +19,6 @@ __all__ = [
     "Category",
     "Order",
     "OrderItem",
+    "Cart",
+    "CartItem",
 ]

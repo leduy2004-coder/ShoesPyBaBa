@@ -8,6 +8,9 @@ from app.routers.auth_router import router as auth_router
 from app.routers.upload_router import router as upload_router
 from app.routers.brand_router import router as brand_router
 from app.routers.category_router import router as category_router
+from app.routers.cart_router import router as cart_router
+from app.routers.order_router import router as order_router
+from app.routers.payment_router import router as payment_router
 from app.models.role_model import seed_roles
 from app.models.user_model import seed_admin
 
@@ -35,6 +38,9 @@ app.include_router(auth_router)
 app.include_router(upload_router)
 app.include_router(brand_router)
 app.include_router(category_router)
+app.include_router(cart_router)
+app.include_router(order_router)
+app.include_router(payment_router)
 
 @app.get("/home")
 async def root():
