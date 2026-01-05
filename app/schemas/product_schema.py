@@ -55,3 +55,42 @@ class UpdateProductSchema(BaseModel):
     status: Optional[str] = None
     image_urls: Optional[List[FileProductResponse]] = None
     variants: Optional[List[ProductVariantSchema]] = None
+
+class ProductResponse(BaseModel):
+    id: int
+    name: str
+    description: Optional[str] = None
+    price: float
+    category_id: Optional[int] = None
+    brand_id: Optional[int] = None
+    status: str = "active"
+    image_urls: Optional[List[str]] = None
+    variants: Optional[List[ProductVariantSchema]] = None
+    sold_count: int = 0
+    
+    class Config:
+        from_attributes = True
+
+class ProductResponseDetail(BaseModel):
+    id: int
+    name: str
+    description: Optional[str] = None
+    price: float
+    category_id: Optional[int] = None
+    brand_id: Optional[int] = None
+    status: str = "active"
+    image_urls: Optional[List[str]] = None
+    variants: Optional[List[ProductVariantSchema]] = None
+    
+    
+    class Config:
+        from_attributes = True
+
+class ProductFilter(BaseModel):
+    keyword: Optional[str] = None
+    category_id: Optional[int] = None
+    brand_id: Optional[int] = None
+    min_price: Optional[float] = None
+    max_price: Optional[float] = None
+    sort_by: Optional[str] = None
+    status: Optional[str] = None
