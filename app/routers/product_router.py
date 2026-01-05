@@ -8,7 +8,6 @@ from app.schemas.base_schema import DataResponse
 from app.schemas.common_schema import PaginationSchema, ResponseSchema
 from app.services.product_service import ProductService
 from app.models.user_model import User
-from app.middleware.authenticate import authenticate as get_current_user
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -65,7 +64,6 @@ def search_products(
     size: int = Query(10, ge=1, le=100),
     
     db: Session = Depends(get_db),
-    # current_user: User = Depends(get_current_user)
 ):
     service = ProductService(db)
     data, pagination = service.get_products(page, size, filter_params)
@@ -81,7 +79,6 @@ def search_products(
 def get_product_detail(
     product_id: int,
     db: Session = Depends(get_db),
-    # current_user: User = Depends(get_current_user)
 ):
     service = ProductService(db)
     product = service.get_product_detail(product_id)

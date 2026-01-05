@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from typing import List
-
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from app.db.base import get_db
-from app.middleware.authenticate import authenticate as get_current_user
+from app.middleware.authenticate import authenticate
 from app.models.user_model import User
 from app.services.review_service import ReviewService
 from app.schemas.review_schema import ReviewCreate, ReviewUpdate, ReviewResponse
@@ -11,11 +11,19 @@ from app.schemas.common_schema import ResponseSchema
 from app.schemas.base_schema import DataResponse
 router = APIRouter()
 
+
+security = HTTPBearer()
+def current_user_dependency(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db),
+) -> User:
+    return authenticate(credentials, db)
+
 @router.post("/reviews", tags=["reviews"], description="Create a new review", response_model=DataResponse[ReviewResponse])
 def create_review(
     data: ReviewCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(current_user_dependency)
 ):
     service = ReviewService(db)
     review = service.create_review(current_user.id, data)
@@ -45,7 +53,7 @@ def get_my_reviews(
     page: int = Query(1, ge=1),
     size: int = Query(10, ge=1, le=100),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(current_user_dependency)
 ):
     service = ReviewService(db)
     data, pagination = service.get_my_reiviews(current_user.id, page, size)
@@ -61,7 +69,7 @@ def update_review(
     review_id: int,
     data: ReviewUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(current_user_dependency)
 ):
     service = ReviewService(db)
     update_review = service.update_review(current_user.id, review_id, data)
@@ -75,7 +83,7 @@ def update_review(
 def delete_review(
     review_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(current_user_dependency)
 ):
     service = ReviewService(db)
     service.delete_review(current_user.id, review_id)

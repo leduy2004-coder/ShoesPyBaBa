@@ -2,7 +2,7 @@
 from fastapi import APIRouter
 from app.schemas.user_schemas import RegisterUserSchema, UserSchema, LoginUserSchema, LoginUserResponseSchema, UserProfileUpdate, UserProfileResponse
 from app.schemas.common_schema import ResponseSchema
-from app.middleware.authenticate import authenticate as get_current_user
+from app.middleware.authenticate import authenticate 
 from app.models.user_model import User
 from fastapi import APIRouter, HTTPException
 from app.schemas.user_schemas import UserSchema
@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from fastapi import Depends
 from app.schemas.base_schema import DataResponse
 from app.core.security import security
-from fastapi.security import HTTPAuthorizationCredentials
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from app.services.user_service import UserService
 from app.middleware.authenticate import authenticate
 from app.schemas.password_schema import (
@@ -23,6 +23,13 @@ from app.services.password_service import PasswordService
 from app.core.config import settings
 from app.models.user_model import User
 
+security = HTTPBearer()
+
+def current_user_dependency(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db),
+) -> User:
+    return authenticate(credentials, db)
 
 router = APIRouter()
 
@@ -55,7 +62,7 @@ async def refresh_access_token(refresh_token: str):
 def update_user_profile(
     data: UserProfileUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(current_user_dependency)
 ):
     service = UserService(db)
     updated_profile = service.update_user_profile(current_user, data)

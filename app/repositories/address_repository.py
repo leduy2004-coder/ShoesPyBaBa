@@ -19,7 +19,6 @@ class AddressRepository:
             province_city=data["province_city"],
             recipient_name=data["recipient_name"],
             recipient_phone=data["recipient_phone"],
-            recipient_email=data["recipient_email"],
             is_default=True
         )
         self.db.add(new_address)
