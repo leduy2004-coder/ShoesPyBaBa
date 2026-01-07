@@ -13,6 +13,9 @@ class Order(BaseModel):
     order_date = Column(DateTime, index=True, default=datetime.now)
     total_amount = Column(Float, nullable=False, index=True)
     status = Column(String(50), index=True, default="pending")  # pending, processing, shipped, delivered, cancelled
+    payment_status = Column(String(50), index=True, default="pending")  # pending, completed, failed, refunded
+    payment_intent_id = Column(String(255), nullable=True, index=True)  # Stripe payment intent ID
+    payment_method = Column(String(50), default="stripe")  # stripe, cash_on_delivery
     created_at = Column(DateTime, index=True, default=datetime.now)
     updated_at = Column(DateTime, index=True, default=datetime.now, onupdate=datetime.now)
     
