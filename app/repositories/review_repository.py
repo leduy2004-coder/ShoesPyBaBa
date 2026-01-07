@@ -28,16 +28,16 @@ class ReviewRepository:
         )
         total = query.count()
         reviews = query.order_by(desc(Review.created_at)).offset(skip).limit(limit).all()
-        return total, reviews
+        return reviews, total
     
     def get_by_user_id(self, user_id: int, skip: int, limit: int):
-        query - self.db.query(Review).filter(
+        query = self.db.query(Review).filter(
             Review.user_id == user_id,
             Review.deleted_at.is_(None)
         )
         total = query.count()
         reviews = query.order_by(desc(Review.created_at)).offset(skip).limit(limit).all()
-        return total, reviews
+        return reviews, total
     
     def has_purchased_product(self, user_id: int, product_id: int) -> bool:
         query = self.db.query(OrderItem).join(Order, OrderItem.order_id == Order.id).filter(
@@ -45,8 +45,6 @@ class ReviewRepository:
             OrderItem.product_id == product_id,
             Order.status == 'delivered'
         )
-        return query.first() is not None
-
     def create(self, user_id: int, data: dict):
         new_review = Review(
             user_id=user_id,

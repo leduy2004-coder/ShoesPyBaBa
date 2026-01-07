@@ -6,7 +6,7 @@ T = TypeVar('T')
 class PaginationSchema(BaseModel, Generic[T]):
     page: int
     size: int
-    tatal: int
+    total: int
     total_pages: int
 
 class ResponseSchema(BaseModel, Generic[T]):
@@ -15,9 +15,9 @@ class ResponseSchema(BaseModel, Generic[T]):
     pagination: Optional[PaginationSchema] = None
 
     @classmethod
-    def custom_response(cls, code: str, message: str, data: T):
-        return cls(code=code, message=message, data=data)
-    
+    def custom_response(cls, code: str, message: str, data: T, pagination: PaginationSchema = None):
+        return cls(code=code, message=message, data=data, pagination=pagination)
+
     @classmethod
     def success_response(cls, data: T):
         return cls(code='000', message='success', data=data)
