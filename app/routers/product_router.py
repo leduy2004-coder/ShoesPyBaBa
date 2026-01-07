@@ -58,19 +58,17 @@ def update_product(product_id: int, data: UpdateProductSchema, service: ProductS
 
 @router.get("/products", tags=["products"], description="Get products with pagination and filters", response_model=ResponseSchema[list[ProductResponse]])
 def search_products(
-    filter_params: ProductFilter = Depends(),
-
-    page: int = Query(1, ge=1),
+   page: int = Query(1, ge=1),
     size: int = Query(10, ge=1, le=100),
-    
-    db: Session = Depends(get_db),
+    filters: ProductFilter = Depends(),
+    db: Session = Depends(get_db)
 ):
     service = ProductService(db)
-    data, pagination = service.get_products(page, size, filter_params)
-    
-    return ResponseSchema(
-        code=200,
-        message="Get products success",
+    data, pagination = service.get_products(page, size, filters)
+
+    return ResponseSchema.custom_response(
+        code="200",
+        message="Products retrieved successfully",
         data=data,
         pagination=pagination
     )

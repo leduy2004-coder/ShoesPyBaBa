@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from datetime import datetime
 from app.models.review_model import Review
+from app.models.order_model import Order, OrderItem
 
 class ReviewRepository:
     def __init__(self, db: Session):
@@ -38,6 +39,14 @@ class ReviewRepository:
         reviews = query.order_by(desc(Review.created_at)).offset(skip).limit(limit).all()
         return total, reviews
     
+    def has_purchased_product(self, user_id: int, product_id: int) -> bool:
+        query = self.db.query(OrderItem).join(Order, OrderItem.order_id == Order.id).filter(
+            Order.user_id == user_id,
+            OrderItem.product_id == product_id,
+            Order.status == 'delivered'
+        )
+        return query.first() is not None
+
     def create(self, user_id: int, data: dict):
         new_review = Review(
             user_id=user_id,

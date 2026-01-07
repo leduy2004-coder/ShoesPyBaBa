@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Literal
 from datetime import datetime
 
 
@@ -94,3 +94,7 @@ class ProductFilter(BaseModel):
     max_price: Optional[float] = None
     sort_by: Optional[str] = None
     status: Optional[str] = None
+
+    sort_by: Optional[
+        Literal["price_asc", "price_desc", "newest"]
+    ] = "newest"

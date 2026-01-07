@@ -9,6 +9,11 @@ class ReviewService:
         self.review_repository = ReviewRepository(db)
 
     def create_review(self, user_id: int, data: ReviewCreate):
+        if not self.review_repository.has_purchased_product(user_id, data.product_id):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User has not purchased this product."
+            )
         existing_review = self.review_repository.get_by_user_and_product(user_id, data.product_id)
         if existing_review:
             raise HTTPException(
