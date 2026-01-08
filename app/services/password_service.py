@@ -3,7 +3,7 @@ from fastapi import HTTPException
 from app.models.user_model import User, OTPType
 from app.core.security import hash_password, verify_password
 from app.services.email_service import EmailService
-from datetime import datetime
+from datetime import datetime, timedelta
 
 class PasswordService:
 
@@ -12,21 +12,33 @@ class PasswordService:
         user = db.query(User).filter(User.email == email).first()
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
-        
-        # Generate OTP
+
+        now = datetime.now()
+
+        # ⛔ Check resend OTP (1 phút)
+        if user.otp_sent_at:
+            resend_time = user.otp_sent_at + timedelta(minutes=1)
+            if now < resend_time:
+                remain = int((resend_time - now).total_seconds())
+                raise HTTPException(
+                    status_code=429,
+                    detail=f"Please wait {remain}s before resending OTP"
+                )
+
         email_service = EmailService()
         otp = email_service.generate_otp()
-        otp_expiry = email_service.get_otp_expiry()
-        
-        # Update user with OTP
+        otp_expiry = now + timedelta(minutes=3)
+
         user.otp_code = otp
         user.otp_expired_at = otp_expiry
+        user.otp_sent_at = now
         user.otp_type = OTPType.RESET
+
         db.commit()
-        
-        # Send OTP email
+
+        # ✅ await HỢP LỆ vì đang ở async def
         await email_service.send_otp_email(email, otp, "RESET")
-        
+
         return {"message": "OTP sent to email"}
 
     @staticmethod
