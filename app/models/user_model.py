@@ -25,6 +25,7 @@ class User(BaseModel):
     otp_code = Column(String(255), nullable=True)
     otp_expired_at = Column(DateTime, nullable=True)
     otp_type = Column(Enum(OTPType), nullable=True)
+    otp_sent_at = Column(DateTime, nullable=True) 
 
     created_at = Column(DateTime, index=True, default=datetime.now)
     updated_at = Column(DateTime, index=True, default=datetime.now)
