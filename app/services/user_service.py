@@ -18,6 +18,7 @@ class UserService:
     def __init__(self, db: Session):
         self.user_repo = UserRepository(db)
         self.db = db
+        self.address_repository = AddressRepository(db)
 
     def get_profile(self, token: str) -> User:
         try:
@@ -59,9 +60,7 @@ class UserService:
             except httpx.HTTPStatusError:
                 raise HTTPException(status_code=401, detail="Invalid or expired refresh token")
     
-    def __init__(self, db: Session):
-        self.db = db
-        self.address_repository = AddressRepository(db)
+
 
     def update_user_profile(self, user: User, data: UserProfileUpdate):
 
