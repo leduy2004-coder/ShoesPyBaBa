@@ -14,7 +14,9 @@ class ReviewUpdate(BaseModel):
 class ReviewResponse(BaseModel):
     id: int
     user_id: int
+    user_name: Optional[str] = None
     product_id: int
+    product_name: Optional[str] = None
     rating: float
     comment: Optional[str]
     created_at: datetime

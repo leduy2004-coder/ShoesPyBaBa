@@ -25,20 +25,77 @@ class ReviewService:
     def get_product_reviews(self, product_id: int, page: int, size: int):
        skip = (page - 1) * size
        reviews, total = self.review_repository.get_by_product_id(product_id, skip, size)
+       
+       from app.schemas.review_schema import ReviewResponse
+       data = [
+           ReviewResponse(
+               id=r.id,
+               user_id=r.user_id,
+               user_name=r.user.full_name if r.user else "Khách hàng",
+               product_id=r.product_id,
+               product_name=r.product.name if r.product else "N/A",
+               rating=r.rating,
+               comment=r.comment,
+               created_at=r.created_at,
+               updated_at=r.updated_at
+           ) for r in reviews
+       ]
+       
        pagination = PaginationSchema(
            page=page, size=size, total=total,
            total_pages=(total + size - 1) // size
        )
-       return reviews, pagination
+       return data, pagination
     
     def get_my_reiviews(self, user_id: int, page: int, size: int):
         skip = (page - 1) * size
         reviews, total = self.review_repository.get_by_user_id(user_id, skip, size)
+        
+        from app.schemas.review_schema import ReviewResponse
+        data = [
+            ReviewResponse(
+                id=r.id,
+                user_id=r.user_id,
+                user_name=r.user.full_name if r.user else "Khách hàng",
+                product_id=r.product_id,
+                product_name=r.product.name if r.product else "N/A",
+                rating=r.rating,
+                comment=r.comment,
+                created_at=r.created_at,
+                updated_at=r.updated_at
+            ) for r in reviews
+        ]
+        
         pagination = PaginationSchema(
             page=page, size=size, total=total,
             total_pages=(total + size - 1) // size
         )
-        return reviews, pagination
+        return data, pagination
+
+    def get_all_reviews(self, page: int, size: int):
+        skip = (page - 1) * size
+        reviews, total = self.review_repository.get_all_reviews(skip, size)
+        
+        from app.schemas.review_schema import ReviewResponse
+        data = [
+            ReviewResponse(
+                id=r.id,
+                user_id=r.user_id,
+                user_name=r.user.full_name if r.user else "Khách hàng",
+                product_id=r.product_id,
+                product_name=r.product.name if r.product else "N/A",
+                rating=r.rating,
+                comment=r.comment,
+                created_at=r.created_at,
+                updated_at=r.updated_at
+            ) for r in reviews
+        ]
+        
+        pagination = PaginationSchema(
+            page=page, size=size, total=total,
+            total_pages=(total + size - 1) // size
+        )
+        return data, pagination
     
     def get_own_review(self, user_id: int, review_id: int):
         review = self.review_repository.get_by_id(review_id)

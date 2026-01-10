@@ -9,6 +9,7 @@ from app.services.review_service import ReviewService
 from app.schemas.review_schema import ReviewCreate, ReviewUpdate, ReviewResponse
 from app.schemas.common_schema import ResponseSchema
 from app.schemas.base_schema import DataResponse
+from app.core.security import require_role
 router = APIRouter()
 
 
@@ -105,4 +106,20 @@ def check_eligibility(
         code="200",
         message="Eligibility checked",
         data=result
+    )
+
+@router.get("/reviews/admin/all", tags=["reviews"], description="Admin: Get all reviews", response_model=ResponseSchema[List[ReviewResponse]])
+def get_all_reviews_admin(
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(require_role(["admin"]))
+):
+    service = ReviewService(db)
+    data, pagination = service.get_all_reviews(page, size)
+    return ResponseSchema.custom_response(
+        code="200",
+        message="All reviews retrieved successfully",
+        data=data,
+        pagination=pagination
     )

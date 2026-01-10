@@ -3,13 +3,14 @@ from typing import Generic, TypeVar, List, Optional
 
 T = TypeVar('T')
 
-class PaginationSchema(BaseModel, Generic[T]):
+class PaginationSchema(BaseModel):
     page: int
     size: int
     total: int
     total_pages: int
 
 class ResponseSchema(BaseModel, Generic[T]):
+    code: str = ""
     data: Optional[T] = None
     message: str = "Success"
     pagination: Optional[PaginationSchema] = None

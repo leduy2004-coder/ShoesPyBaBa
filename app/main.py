@@ -1,4 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.db.base import get_db, engine, SessionLocal
 from app.models import Base
@@ -28,6 +31,36 @@ app = FastAPI(
     title="SHOES SHOP BABA",
     description="BABA SHOES SHOP API Documentation",
 )
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    error_messages = []
+    for error in exc.errors():
+        loc = error.get("loc")
+        msg = error.get("msg")
+        field = loc[-1] if loc else "field"
+        error_messages.append(f"{field}: {msg}")
+    
+    full_message = " | ".join(error_messages)
+    return JSONResponse(
+        status_code=200,
+        content={
+            "code": "422",
+            "message": full_message,
+            "data": None
+        }
+    )
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "code": str(exc.status_code),
+            "message": exc.detail,
+            "data": None
+        }
+    )
 
 # CORS configuration for frontend
 from app.middleware.cors import setup_cors

@@ -7,6 +7,7 @@ from app.models.brand_model import Brand
 from app.models.category_model import Category
 from app.models.order_model import Order, OrderItem
 from app.models.cart_model import Cart, CartItem
+from app.models.review_model import Review
 
 __all__ = [
     "Base",
@@ -21,4 +22,5 @@ __all__ = [
     "OrderItem",
     "Cart",
     "CartItem",
+    "Review",
 ]

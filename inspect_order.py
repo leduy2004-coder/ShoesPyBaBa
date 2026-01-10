@@ -1,0 +1,10 @@
+import sqlite3
+conn = sqlite3.connect('dev.db')
+cursor = conn.cursor()
+cursor.execute('SELECT id, user_id, status FROM orders WHERE id=6')
+print("Order 6:", cursor.fetchone())
+cursor.execute('SELECT product_id, product_name FROM order_items WHERE order_id=6')
+print("Items for Order 6:", cursor.fetchall())
+cursor.execute('SELECT id, full_name FROM users')
+print("Users:", cursor.fetchall())
+conn.close()

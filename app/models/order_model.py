@@ -12,6 +12,8 @@ class Order(BaseModel):
     
     # Relationship to user
     user = relationship("User", backref="orders")
+    items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
+    
     delivery_address = Column(JSON, nullable=False)  # Address object as JSON
     order_date = Column(DateTime, index=True, default=datetime.now)
     total_amount = Column(Float, nullable=False, index=True)
@@ -29,6 +31,9 @@ class OrderItem(BaseModel):
     id = Column(Integer, primary_key=True, index=True)
     order_id = Column(Integer, ForeignKey("orders.id"), nullable=False, index=True)
     product_id = Column(Integer, ForeignKey("products.id"), nullable=False, index=True)
+    
+    order = relationship("Order", back_populates="items")
+    
     product_name = Column(String(255), nullable=False)
     size = Column(Integer, nullable=True)
     color = Column(String(50), nullable=True)

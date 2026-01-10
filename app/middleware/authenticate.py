@@ -11,7 +11,7 @@ from app.schemas.user_schemas import TokenPayload
 from app.models.user_model import User
 
 def authenticate(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    credentials: HTTPAuthorizationCredentials = Depends(security),  
     db: Session = Depends(get_db)
 ):
     try:

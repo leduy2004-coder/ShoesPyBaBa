@@ -1,5 +1,6 @@
 from app.models.base_model import BaseModel
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Float
+from sqlalchemy.orm import relationship
 import datetime
 
 class Review(BaseModel):
@@ -8,6 +9,11 @@ class Review(BaseModel):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     product_id = Column(Integer, ForeignKey("products.id"), nullable=False, index=True)
+    
+    # Relationships
+    user = relationship("User", backref="reviews")
+    product = relationship("Product", backref="reviews")
+    
     rating = Column(Float, nullable=False, index=True)  
     comment = Column(Text, nullable=True)  
     created_at = Column(DateTime, nullable=False)
