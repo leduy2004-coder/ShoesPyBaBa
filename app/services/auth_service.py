@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app.models.user_model import User
+from app.models.user_model import OTPType, User
 from app.schemas.user_schemas import RegisterUserSchema, LoginUserResponseSchema, LoginUserSchema
 from app.core.security import hash_password, verify_password, create_access_token
 from app.core.config import settings
@@ -178,3 +178,29 @@ class AuthService:
         db.commit()
         
         return user
+    
+    @staticmethod
+    async def reset_password_with_otp(email: str, otp: str, new_password: str, db: Session):
+        # 1. Tìm user
+        user = db.query(User).filter(User.email == email).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # 2. ĐỐI CHIẾU OTP (Đáp ứng đúng yêu cầu của bạn)
+        if user.otp_code != otp:
+            raise HTTPException(status_code=400, detail="Mã OTP không chính xác")
+        
+        # 3. Kiểm tra hết hạn
+        if user.otp_expired_at < datetime.now():
+            raise HTTPException(status_code=400, detail="Mã OTP đã hết hạn")
+        
+        # 4. Cập nhật mật khẩu mới
+        user.password = hash_password(new_password)
+        
+        # 5. Xóa OTP sau khi dùng xong
+        user.otp_code = None
+        user.otp_expired_at = None
+        
+        db.commit()
+        return {"email": email, "status": "reset_success"}
+

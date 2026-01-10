@@ -4,5 +4,6 @@
     ],
     "python.autoComplete.extraPaths": [
         "${workspaceFolder}"
-    ]
+    ],
+    "liveServer.settings.port": 5501
 }

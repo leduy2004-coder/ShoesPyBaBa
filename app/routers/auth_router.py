@@ -128,20 +128,33 @@ async def reset_password(
     except HTTPException as e:
         return DataResponse.custom_response(code=str(e.status_code), message=e.detail, data=None)
 
+from app.core.security import hash_password
+from app.models.user_model import User
+
 @router.post("/change-password", tags=["auth"])
 async def change_password(
     data: ResetPasswordSchema,
     db: Session = Depends(get_db),
     current_user: dict = Depends(require_role(["user", "admin"]))
 ):
-    PasswordService.change_password(
-        current_user["user_id"],
-        data.new_password,
-        db
-    )
+    try:
+        user = db.query(User).filter(User.id == current_user["user_id"]).first()
+        
+        if not user:
+            return DataResponse.custom_response(code="404", message="User not found", data=None)
 
-    return DataResponse.custom_response(
-        code="200",
-        message="Password changed successfully",
-        data=None
-    )
+        user.password = hash_password(data.new_password) 
+       
+        db.add(user)
+        db.commit()  
+        db.refresh(user)
+
+        return DataResponse.custom_response(
+            code="200",
+            message="Password changed successfully",
+            data=None
+        )
+
+    except Exception as e:
+        db.rollback() 
+        return DataResponse.custom_response(code="500", message=str(e), data=None)
