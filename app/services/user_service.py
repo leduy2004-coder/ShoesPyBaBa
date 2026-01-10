@@ -20,24 +20,40 @@ class UserService:
         self.db = db
         self.address_repository = AddressRepository(db)
 
-    def get_profile(self, token: str) -> User:
+    def get_profile(self, token: str) -> UserProfileResponse:
         try:
             payload = jwt.decode(
-                token, settings.SECRET_KEY,
-                algorithms=settings.ALGORITHM
+                token, 
+                settings.SECRET_KEY,
+                algorithms=[settings.ALGORITHM] # Đảm bảo là một list
             )
             token_data = TokenPayload(**payload)
         except (jwt.PyJWTError, ValidationError):
-             raise HTTPException(
+            raise HTTPException(
                 status_code=403,
-                detail="credentials"
+                detail="Could not validate credentials"
             )
         
         user = self.user_repo.get_by_id(token_data.user_id)
         if not user:
-             raise HTTPException(status_code=404, detail="User not found")
+            raise HTTPException(status_code=404, detail="User not found")
         
-        return user
+        # Query địa chỉ
+        address = self.db.query(Address).filter(
+            Address.user_id == user.id, 
+            Address.is_default == True
+        ).first()
+        
+        # Trả về đúng Schema đã khai báo ở Router
+        return UserProfileResponse(
+            id=user.id,
+            email=user.email,
+            full_name=user.full_name,
+            phone_number=user.phone_number,
+            province_city=address.province_city if address else None,
+            ward=address.ward if address else None,
+            street_address=address.street_address if address else None
+        )
 
 
     @staticmethod

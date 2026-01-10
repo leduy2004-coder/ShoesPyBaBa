@@ -61,13 +61,12 @@ class UserProfileResponse(BaseModel):
     id: int
     full_name: Optional[str] = None
     email: Optional[str] = None
-    phone_number: Optional[str]
+    phone_number: Optional[str] = None  # Thêm = None ở đây
     street_address: Optional[str] = None
     ward: Optional[str] = None
     province_city: Optional[str] = None
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True) # Cách viết mới cho Pydantic v2
 
 class VerifyOtpSchema(BaseModel):
     email: str
