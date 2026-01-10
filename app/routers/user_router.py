@@ -36,7 +36,7 @@ router = APIRouter()
 @router.get("/profile", tags=["users"], description="Get current user", response_model=DataResponse[UserSchema])
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)):
     user_service = UserService(db)
-    current_user = user_service.get_profile(credentials)
+    current_user = user_service.get_profile(credentials.credentials)
     return DataResponse.custom_response(code="200", message="Get current user success", data=current_user)
 
 
