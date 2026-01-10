@@ -61,3 +61,13 @@ class ReviewService:
     def delete_review(self, user_id: int, review_id: int):
         review = self.get_own_review(user_id, review_id)
         self.review_repository.delete(review)
+
+    def check_eligibility(self, user_id: int, product_id: int):
+        has_purchased = self.review_repository.has_purchased_product(user_id, product_id)
+        existing_review = self.review_repository.get_by_user_and_product(user_id, product_id)
+        
+        return {
+            "can_review": has_purchased and not existing_review,
+            "has_purchased": has_purchased,
+            "already_reviewed": existing_review is not None
+        }

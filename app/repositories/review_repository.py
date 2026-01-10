@@ -40,11 +40,11 @@ class ReviewRepository:
         return reviews, total
     
     def has_purchased_product(self, user_id: int, product_id: int) -> bool:
-        query = self.db.query(OrderItem).join(Order, OrderItem.order_id == Order.id).filter(
+        return self.db.query(OrderItem).join(Order, OrderItem.order_id == Order.id).filter(
             Order.user_id == user_id,
             OrderItem.product_id == product_id,
-            Order.status == 'delivered'
-        )
+            Order.status == "delivered"
+        ).first() is not None
     def create(self, user_id: int, data: dict):
         new_review = Review(
             user_id=user_id,

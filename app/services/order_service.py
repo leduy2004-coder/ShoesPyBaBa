@@ -197,6 +197,7 @@ class OrderService:
         return OrderSchema(
             id=order.id,
             user_id=order.user_id,
+            user_full_name=order.user.full_name if order.user else None,
             delivery_address=order.delivery_address,
             order_date=order.order_date,
             total_amount=order.total_amount,
@@ -229,6 +230,7 @@ class OrderService:
             order_schemas.append(OrderSchema(
                 id=order.id,
                 user_id=order.user_id,
+                user_full_name=order.user.full_name if order.user else None,
                 delivery_address=order.delivery_address,
                 order_date=order.order_date,
                 total_amount=order.total_amount,
@@ -280,6 +282,7 @@ class OrderService:
             order_schemas.append(OrderSchema(
                 id=order.id,
                 user_id=order.user_id,
+                user_full_name=order.user.full_name if order.user else None,
                 delivery_address=order.delivery_address,
                 order_date=order.order_date,
                 total_amount=order.total_amount,
@@ -322,6 +325,7 @@ class OrderService:
             order_schemas.append(OrderSchema(
                 id=order.id,
                 user_id=order.user_id,
+                user_full_name=order.user.full_name if order.user else None,
                 delivery_address=order.delivery_address,
                 order_date=order.order_date,
                 total_amount=order.total_amount,

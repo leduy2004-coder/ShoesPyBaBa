@@ -1,5 +1,5 @@
 from sqlalchemy import Column, String, Float, DateTime, Integer, ForeignKey, JSON
-
+from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.models.base_model import BaseModel
 
@@ -9,6 +9,9 @@ class Order(BaseModel):
     
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    
+    # Relationship to user
+    user = relationship("User", backref="orders")
     delivery_address = Column(JSON, nullable=False)  # Address object as JSON
     order_date = Column(DateTime, index=True, default=datetime.now)
     total_amount = Column(Float, nullable=False, index=True)

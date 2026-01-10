@@ -38,6 +38,7 @@ class OrderSchema(BaseModel):
     
     id: int
     user_id: int
+    user_full_name: Optional[str] = None
     delivery_address: Dict[str, Any]  # JSON field
     order_date: datetime
     total_amount: float

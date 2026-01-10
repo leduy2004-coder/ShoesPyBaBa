@@ -92,3 +92,17 @@ def delete_review(
         message="Review deleted successfully",
         data=None
     )
+
+@router.get("/reviews/check-eligibility", tags=["reviews"], description="Check if user can review product")
+def check_eligibility(
+    product_id: int = Query(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(current_user_dependency)
+):
+    service = ReviewService(db)
+    result = service.check_eligibility(current_user.id, product_id)
+    return DataResponse.custom_response(
+        code="200",
+        message="Eligibility checked",
+        data=result
+    )

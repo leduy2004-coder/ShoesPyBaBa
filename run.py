@@ -1,10 +1,12 @@
+import pymysql
+pymysql.install_as_MySQLdb()
+
 import uvicorn
 
 if __name__ == "__main__":
-    # Use uvicorn import path string so Python path doesn't need manual hacks.
     uvicorn.run(
         "app.main:app",
-        host="0.0.0.0",
+        host="127.0.0.1",
         port=8000,
-        reload=True,
+        reload=True
     )

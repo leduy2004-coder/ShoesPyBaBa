@@ -24,7 +24,7 @@ def authenticate(
 
     except (jwt.PyJWTError, ValidationError):
         raise HTTPException(
-            status_code=403,
+            status_code=401,
             detail="Invalid credentials"
         )
 

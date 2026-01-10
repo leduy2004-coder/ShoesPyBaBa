@@ -9,21 +9,35 @@ router = APIRouter(
 )
 
 @router.post("/", response_model=list[FileResponse], status_code=status.HTTP_201_CREATED)
-async def upload_files(files: list[UploadFile] = File(...)):
+async def upload_files(
+    file: UploadFile = File(None),
+    files: list[UploadFile] = File(None)
+):
     """
-    Upload multiple files to Cloudinary.
+    Upload one or multiple files to Cloudinary.
+    Supports both 'file' and 'files' field names.
     """
-    uploaded_files = []
-    for file in files:
-        result = CloudinaryService.upload_file(file)
-        uploaded_files.append(FileResponse(
+    all_files = []
+    if file:
+        all_files.append(file)
+    if files:
+        all_files.extend(files)
+
+    if not all_files:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail="No file or files provided")
+
+    uploaded_results = []
+    for f in all_files:
+        result = CloudinaryService.upload_file(f)
+        uploaded_results.append(FileResponse(
             public_id=result.get("public_id"),
             url=result.get("secure_url"),
             format=result.get("format"),
             resource_type=result.get("resource_type"),
             created_at=str(result.get("created_at"))
         ))
-    return uploaded_files
+    return uploaded_results
 
 @router.delete("/{public_id}")
 async def delete_file(public_id: str):

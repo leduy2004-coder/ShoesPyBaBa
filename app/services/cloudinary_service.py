@@ -6,19 +6,24 @@ from app.core.config import settings
 
 # Configure Cloudinary
 cloudinary.config(
-    cloud_name=settings.CLOUDINARY_CLOUD_NAME,
-    api_key=settings.CLOUDINARY_API_KEY,
-    api_secret=settings.CLOUDINARY_API_SECRET
+    cloud_name="db8bzpkle",
+    api_key="774674856922989",
+    api_secret="eBR2PmDP3LQxCcSHMPeKz2QM4uQ"
 )
 
 class CloudinaryService:
     @staticmethod
     def upload_file(file: UploadFile) -> dict:
         try:
-            # Upload the file to Cloudinary
-            result = cloudinary.uploader.upload(file.file)
+            # Read file content
+            content = file.file.read()
+            # Upload the file content to Cloudinary
+            result = cloudinary.uploader.upload(content)
             return result
         except Exception as e:
+            print(f"DEBUG: Cloudinary Upload Error: {str(e)}")
+            import traceback
+            traceback.print_exc()
             raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
 
     @staticmethod

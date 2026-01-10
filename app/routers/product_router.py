@@ -31,10 +31,12 @@ async def get_products(
     page: int = 1, 
     keyword: Optional[str] = None, 
     search_type: str = "title",
+    sort_by: Optional[str] = None,
     service: ProductService = Depends(get_product_service)
 ):
-    products = service.get_products(limit=limit, page=page, keyword=keyword, search_type=search_type)
-    return DataResponse.custom_response(code="200", message="get list products", data=products)
+    # Sử dụng get_products_v2 vì nó hỗ trợ limit, page, keyword và trả về đúng schema ProductPaginationSchema
+    products_data = service.get_products_v2(limit=limit, page=page, keyword=keyword, search_type=search_type, sort_by=sort_by)
+    return DataResponse.custom_response(code="200", message="get list products", data=products_data)
 
 @router.post("/products", tags=["products"], description="Create a new product", response_model=DataResponse[ProductSchema])
 async def create_product(data: CreateProductSchema, service: ProductService = Depends(get_product_service), current_user: dict = Depends(require_role(["admin"]))):
@@ -55,33 +57,3 @@ def delete_product(product_id: int, service: ProductService = Depends(get_produc
 def update_product(product_id: int, data: UpdateProductSchema, service: ProductService = Depends(get_product_service), current_user: dict = Depends(require_role(["admin"]))):
     product = service.update_product(product_id, data)
     return DataResponse.custom_response(code="200", message="Update product by id", data=product)
-
-@router.get("/products", tags=["products"], description="Get products with pagination and filters", response_model=ResponseSchema[list[ProductResponse]])
-def search_products(
-   page: int = Query(1, ge=1),
-    size: int = Query(10, ge=1, le=100),
-    filters: ProductFilter = Depends(),
-    db: Session = Depends(get_db)
-):
-    service = ProductService(db)
-    data, pagination = service.get_products(page, size, filters)
-
-    return ResponseSchema.custom_response(
-        code="200",
-        message="Products retrieved successfully",
-        data=data,
-        pagination=pagination
-    )
-
-@router.get("/products/{product_id}", tags=["products"], description="Get product detail by id", response_model=DataResponse[ProductResponseDetail])
-def get_product_detail(
-    product_id: int,
-    db: Session = Depends(get_db),
-):
-    service = ProductService(db)
-    product = service.get_product_detail(product_id)
-    
-    if not product:
-        raise HTTPException(status_code=404, detail="Sản phẩm không tồn tại")
-        
-    return ResponseSchema(code=200, message="Get detail product success", data=product)

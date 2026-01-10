@@ -45,6 +45,33 @@ async def get_order(
     return order
 
 
+@router.get("/admin/all", response_model=OrderHistorySchema)
+async def get_all_orders(
+    current_user: Annotated[dict, Depends(get_current_user)],
+    status_filter: Optional[str] = Query(None, alias="status"),
+    payment_status: Optional[str] = Query(None),
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1, le=100),
+    db: Session = Depends(get_db)
+):
+    """Admin: Get all orders with optional filters"""
+    if current_user.get("role") != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required"
+        )
+    
+    filters = OrderSearchSchema(
+        user_id=None,
+        status=status_filter,
+        payment_status=payment_status,
+        page=page,
+        limit=limit
+    )
+    
+    return OrderService.search_orders(db, filters)
+
+
 @router.get("/search/all", response_model=OrderHistorySchema)
 async def search_orders(
     current_user: Annotated[dict, Depends(get_current_user)],
@@ -125,6 +152,6 @@ async def update_order_status(
         )
     
     if data.status:
-        return OrderService.update_order_status(db, order_id, data.status)
+        OrderService.update_order_status(db, order_id, data.status)
     
     return OrderService.get_order_by_id(db, order_id)

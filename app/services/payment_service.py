@@ -15,13 +15,42 @@ from app.schemas.order_schema import CreateOrderFromCartSchema, OrderSchema
 from app.services.order_service import OrderService
 from app.repositories.order_repository import OrderRepository
 
-# Initialize Stripe with secret key from environment
-stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+from dotenv import load_dotenv
+
+# Initialize load_dotenv
+load_dotenv()
+
+# Get Stripe key from environment
+STRIPE_KEY = os.getenv("STRIPE_SECRET_KEY")
+
+# Initialize Stripe only if a valid key is provided
+if STRIPE_KEY and STRIPE_KEY != "mock" and STRIPE_KEY != "sk_test_your_secret_key_here":
+    stripe.api_key = STRIPE_KEY
+else:
+    stripe.api_key = None
 
 class PaymentService:
     @staticmethod
+    def _is_mock_mode(payment_intent_id: Optional[str] = None) -> bool:
+        """Helper to determine if we should run in mock mode"""
+        if not stripe.api_key:
+            return True
+        if payment_intent_id and payment_intent_id.startswith("pi_mock_"):
+            return True
+        return False
+
+    @staticmethod
     def create_payment_intent(amount: int) -> PaymentIntentResponseSchema:
-        """Create Stripe payment intent"""
+        """Create Stripe payment intent (Supports Mock mode for testing)"""
+        if PaymentService._is_mock_mode():
+            return PaymentIntentResponseSchema(
+                payment_intent_id=f"pi_mock_{os.urandom(8).hex()}",
+                client_secret="mock_secret_for_testing_only",
+                amount=amount,
+                currency="usd",
+                status="succeeded"
+            )
+
         try:
             # Convert amount to cents (Stripe uses smallest currency unit)
             amount_in_cents = int(amount * 100)
@@ -56,15 +85,17 @@ class PaymentService:
     def confirm_payment_from_cart(db: Session, user_id: int, data: ConfirmPaymentFromCartSchema) -> OrderSchema:
         """Confirm payment and create order from cart"""
         try:
-            # Retrieve payment intent from Stripe
-            payment_intent = stripe.PaymentIntent.retrieve(data.payment_intent_id)
-            
-            # Check payment status
-            if payment_intent.status != "succeeded":
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Payment not completed. Status: {payment_intent.status}"
-                )
+            # MOCK MODE check
+            if not PaymentService._is_mock_mode(data.payment_intent_id):
+                # Retrieve payment intent from Stripe
+                payment_intent = stripe.PaymentIntent.retrieve(data.payment_intent_id)
+                
+                # Check payment status
+                if payment_intent.status != "succeeded":
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=f"Payment not completed. Status: {payment_intent.status}"
+                    )
             
             # Check if order already exists for this payment intent
             existing_order = OrderRepository.get_order_by_payment_intent(db, data.payment_intent_id)
@@ -109,15 +140,17 @@ class PaymentService:
     def confirm_payment_from_products(db: Session, user_id: int, data: ConfirmPaymentFromProductsSchema) -> OrderSchema:
         """Confirm payment and create order from products (buy now)"""
         try:
-            # Retrieve payment intent from Stripe
-            payment_intent = stripe.PaymentIntent.retrieve(data.payment_intent_id)
-            
-            # Check payment status
-            if payment_intent.status != "succeeded":
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Payment not completed. Status: {payment_intent.status}"
-                )
+            # MOCK MODE check
+            if not PaymentService._is_mock_mode(data.payment_intent_id):
+                # Retrieve payment intent from Stripe
+                payment_intent = stripe.PaymentIntent.retrieve(data.payment_intent_id)
+                
+                # Check payment status
+                if payment_intent.status != "succeeded":
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=f"Payment not completed. Status: {payment_intent.status}"
+                    )
             
             # Check if order already exists for this payment intent
             existing_order = OrderRepository.get_order_by_payment_intent(db, data.payment_intent_id)
@@ -160,6 +193,16 @@ class PaymentService:
     def test_confirm_payment(payment_intent_id: str) -> dict:
         """TEST ONLY: Automatically confirm payment on Stripe using test card method"""
         try:
+            # MOCK MODE check
+            if PaymentService._is_mock_mode(payment_intent_id):
+                return {
+                    "payment_intent_id": payment_intent_id,
+                    "status": "succeeded",
+                    "amount": 0, # In mock mode amount doesn't matter for confirmation
+                    "currency": "usd",
+                    "message": "MOCK MODE: Payment auto-confirmed as success."
+                }
+
             # 1. Confirm payment intent with test card
             payment_intent = stripe.PaymentIntent.confirm(
                 payment_intent_id,

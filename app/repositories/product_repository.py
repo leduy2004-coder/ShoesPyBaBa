@@ -83,7 +83,8 @@ class ProductRepository:
         skip: int = 0, 
         limit: int = 100, 
         keyword: Optional[str] = None, 
-        search_type: str = "title"
+        search_type: str = "title",
+        sort_by: Optional[str] = None
     ) -> Tuple[List[Product], int]:
         query = self.db.query(Product).filter(Product.deleted_at == None)
         
@@ -95,6 +96,16 @@ class ProductRepository:
             elif search_type == "brand":
                 query = query.filter(Product.brand_id == keyword)
         
+        # Add sorting
+        if sort_by == "price-asc":
+            query = query.order_by(asc(Product.price))
+        elif sort_by == "price-desc":
+            query = query.order_by(desc(Product.price))
+        elif sort_by == "name-asc":
+            query = query.order_by(asc(Product.name))
+        else:
+            query = query.order_by(desc(Product.id))
+
         total = query.count()
         products = query.offset(skip).limit(limit).all()
         return products, total
