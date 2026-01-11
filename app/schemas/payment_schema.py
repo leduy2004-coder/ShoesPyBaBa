@@ -6,7 +6,7 @@ from app.schemas.order_schema import DeliveryAddressSchema, DirectOrderItemSchem
 class CreatePaymentIntentSchema(BaseModel):
     """Schema for creating Stripe payment intent"""
     amount: float  # Amount in currency (will be converted to cents)
-    currency: str = "usd"
+    currency: str = "vnd"
 
 class PaymentIntentResponseSchema(BaseModel):
     """Response schema for payment intent"""

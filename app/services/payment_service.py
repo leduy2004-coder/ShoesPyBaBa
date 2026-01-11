@@ -47,18 +47,16 @@ class PaymentService:
                 payment_intent_id=f"pi_mock_{os.urandom(8).hex()}",
                 client_secret="mock_secret_for_testing_only",
                 amount=amount,
-                currency="usd",
+                currency="vnd",
                 status="succeeded"
             )
 
         try:
-            # Convert amount to cents (Stripe uses smallest currency unit)
-            amount_in_cents = int(amount * 100)
-            
             # Create payment intent with card only
+            # VND is a zero-decimal currency in Stripe, so we don't multiply by 100
             payment_intent = stripe.PaymentIntent.create(
-                amount=amount_in_cents,
-                currency="usd",
+                amount=int(amount),
+                currency="vnd",
                 payment_method_types=["card"],
             )
             
@@ -66,7 +64,7 @@ class PaymentService:
                 payment_intent_id=payment_intent.id,
                 client_secret=payment_intent.client_secret,
                 amount=amount,
-                currency="usd",
+                currency="vnd",
                 status=payment_intent.status
             )
             
@@ -212,7 +210,7 @@ class PaymentService:
             return {
                 "payment_intent_id": payment_intent.id,
                 "status": payment_intent.status,
-                "amount": payment_intent.amount / 100,
+                "amount": payment_intent.amount, # VND is zero-decimal
                 "currency": payment_intent.currency,
                 "message": "Payment confirmed successfully on Stripe (Test Card)."
             }
