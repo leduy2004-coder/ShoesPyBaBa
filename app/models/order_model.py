@@ -33,6 +33,7 @@ class OrderItem(BaseModel):
     product_id = Column(Integer, ForeignKey("products.id"), nullable=False, index=True)
     
     order = relationship("Order", back_populates="items")
+    product = relationship("Product", backref="order_items")
     
     product_name = Column(String(255), nullable=False)
     size = Column(Integer, nullable=True)

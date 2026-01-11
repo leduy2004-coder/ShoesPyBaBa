@@ -17,6 +17,29 @@ import math
 
 class OrderService:
     """Service for order business logic"""
+
+    @staticmethod
+    def _map_order_item(item):
+        """Helper to map order item and include product info"""
+        product_image = None
+        if item.product and item.product.image_urls and len(item.product.image_urls) > 0:
+            first_image = item.product.image_urls[0]
+            if isinstance(first_image, dict):
+                product_image = first_image.get('url')
+            else:
+                product_image = first_image
+            
+        return {
+            "id": item.id,
+            "order_id": item.order_id,
+            "product_id": item.product_id,
+            "product_name": item.product_name,
+            "product_image": product_image,
+            "size": item.size,
+            "color": item.color,
+            "quantity": item.quantity,
+            "price_at_purchase": item.price_at_purchase
+        }
     
     @staticmethod
     def create_order_from_cart(db: Session, user_id: int, data: CreateOrderFromCartSchema, 
@@ -207,16 +230,7 @@ class OrderService:
             payment_method=order.payment_method,
             created_at=order.created_at,
             updated_at=order.updated_at,
-            items=[{
-                "id": item.id,
-                "order_id": item.order_id,
-                "product_id": item.product_id,
-                "product_name": item.product_name,
-                "size": item.size,
-                "color": item.color,
-                "quantity": item.quantity,
-                "price_at_purchase": item.price_at_purchase
-            } for item in items]
+            items=[OrderService._map_order_item(item) for item in items]
         )
     
     @staticmethod
@@ -240,16 +254,7 @@ class OrderService:
                 payment_method=order.payment_method,
                 created_at=order.created_at,
                 updated_at=order.updated_at,
-                items=[{
-                    "id": item.id,
-                    "order_id": item.order_id,
-                    "product_id": item.product_id,
-                    "product_name": item.product_name,
-                    "size": item.size,
-                    "color": item.color,
-                    "quantity": item.quantity,
-                    "price_at_purchase": item.price_at_purchase
-                } for item in items]
+                items=[OrderService._map_order_item(item) for item in items]
             ))
         
         total_pages = math.ceil(total / limit) if total > 0 else 0
@@ -292,16 +297,7 @@ class OrderService:
                 payment_method=order.payment_method,
                 created_at=order.created_at,
                 updated_at=order.updated_at,
-                items=[{
-                    "id": item.id,
-                    "order_id": item.order_id,
-                    "product_id": item.product_id,
-                    "product_name": item.product_name,
-                    "size": item.size,
-                    "color": item.color,
-                    "quantity": item.quantity,
-                    "price_at_purchase": item.price_at_purchase
-                } for item in items]
+                items=[OrderService._map_order_item(item) for item in items]
             ))
         
         total_pages = math.ceil(total / filters.limit) if total > 0 else 0
@@ -335,16 +331,7 @@ class OrderService:
                 payment_method=order.payment_method,
                 created_at=order.created_at,
                 updated_at=order.updated_at,
-                items=[{
-                    "id": item.id,
-                    "order_id": item.order_id,
-                    "product_id": item.product_id,
-                    "product_name": item.product_name,
-                    "size": item.size,
-                    "color": item.color,
-                    "quantity": item.quantity,
-                    "price_at_purchase": item.price_at_purchase
-                } for item in items]
+                items=[OrderService._map_order_item(item) for item in items]
             ))
         
         total_pages = math.ceil(total / limit) if total > 0 else 0

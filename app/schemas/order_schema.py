@@ -18,6 +18,7 @@ class OrderItemSchema(BaseModel):
     order_id: int
     product_id: int
     product_name: str
+    product_image: Optional[str] = None
     size: Optional[int] = None
     color: Optional[str] = None
     quantity: int
