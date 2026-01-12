@@ -86,7 +86,16 @@ class ProductRepository:
         search_type: str = "title",
         sort_by: Optional[str] = None
     ) -> Tuple[List[Product], int]:
-        query = self.db.query(Product).filter(Product.deleted_at == None)
+        # Create base query with sold_count aggregation
+        query = (
+            self.db.query(
+                Product,
+                func.coalesce(func.sum(OrderItem.quantity), 0).label("sold_count")
+            )
+            .outerjoin(OrderItem, Product.id == OrderItem.product_id)
+            .filter(Product.deleted_at == None)
+            .group_by(Product.id)
+        )
         
         if keyword:
             if search_type == "title":
@@ -107,11 +116,33 @@ class ProductRepository:
             query = query.order_by(desc(Product.id))
 
         total = query.count()
-        products = query.offset(skip).limit(limit).all()
+        results = query.offset(skip).limit(limit).all()
+        
+        # Map results to Product objects with sold_count attribute
+        products = []
+        for product, sold_count in results:
+            product.sold_count = sold_count
+            products.append(product)
+            
         return products, total
 
     def get_by_id(self, product_id: int) -> Optional[Product]:
-        return self.db.query(Product).filter(Product.id == product_id, Product.deleted_at == None).first()
+        result = (
+            self.db.query(
+                Product,
+                func.coalesce(func.sum(OrderItem.quantity), 0).label("sold_count")
+            )
+            .outerjoin(OrderItem, Product.id == OrderItem.product_id)
+            .filter(Product.id == product_id, Product.deleted_at == None)
+            .group_by(Product.id)
+            .first()
+        )
+        
+        if result:
+            product, sold_count = result
+            product.sold_count = sold_count
+            return product
+        return None
 
     def create(self, product_data: dict) -> Product:
         db_product = Product(**product_data)

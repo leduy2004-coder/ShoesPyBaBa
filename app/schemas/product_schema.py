@@ -25,6 +25,7 @@ class ProductSchema(BaseModel):
     image_urls: Optional[List[FileProductResponse]] = None
     variants: Optional[List[Dict[str, Any]]] = None
     deleted_at: Optional[datetime] = None
+    sold_count: int = 0
 
 
 class ProductPaginationSchema(BaseModel):
