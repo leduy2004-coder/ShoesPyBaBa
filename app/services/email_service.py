@@ -86,7 +86,7 @@ class EmailService:
                 </div>
 
                 <p style="text-align:center;">
-                    ⏳ This code will expire in <strong>10 minutes</strong>.
+                    ⏳ This code will expire in <strong>3 minutes</strong>.
                 </p>
 
                 <p style="font-size: 13px; color: #6b7280; margin-top: 24px;">
