@@ -13,6 +13,7 @@ from pydantic import ValidationError
 from app.repositories.user_repository import UserRepository
 from app.services.email_service import EmailService
 from datetime import datetime
+import httpx
 
 class UserService:
     def __init__(self, db: Session):

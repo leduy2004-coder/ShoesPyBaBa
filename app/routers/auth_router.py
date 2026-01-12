@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from app.core.security import require_role
 from app.db.base import get_db
-from app.schemas.user_schemas import RegisterUserSchema, UserSchema, LoginUserSchema, LoginUserResponseSchema, VerifyOtpSchema
+from app.schemas.user_schemas import RegisterUserSchema, UserSchema, LoginUserSchema, LoginUserResponseSchema, VerifyOtpSchema, LoginUserByGoogleResponseSchema
 from app.services.auth_service import AuthService
 from app.schemas.base_schema import DataResponse
 from fastapi.responses import RedirectResponse
@@ -57,7 +57,7 @@ def login_google():
     url = f"{settings.GOOGLE_AUTH_ENDPOINT}?{urlencode(query_params)}"
     return RedirectResponse(url)
 
-@router.get("/login/oauth2/code/google", tags=["auth"], description="Google Auth Callback", response_model=DataResponse[LoginUserResponseSchema])
+@router.get("/login/oauth2/code/google", tags=["auth"], description="Google Auth Callback", response_model=DataResponse[LoginUserByGoogleResponseSchema])
 async def auth_callback(request: Request, db: Session = Depends(get_db)):
     code = request.query_params.get("code")
     if not code:

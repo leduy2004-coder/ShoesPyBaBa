@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from app.models.user_model import OTPType, User
-from app.schemas.user_schemas import RegisterUserSchema, LoginUserResponseSchema, LoginUserSchema
+from app.schemas.user_schemas import RegisterUserSchema, LoginUserResponseSchema, LoginUserSchema, LoginUserByGoogleResponseSchema
 from app.core.security import hash_password, verify_password, create_access_token
 from app.core.config import settings
 from fastapi import HTTPException
@@ -65,6 +65,7 @@ class AuthService:
             token_response = await client.post(settings.GOOGLE_TOKEN_ENDPOINT, data=data)
             token_data = token_response.json()
             
+            google_refresh_token = token_data.get("refresh_token")
             access_token = token_data.get("access_token")
             
             if not access_token:
@@ -102,7 +103,7 @@ class AuthService:
 
             role_name = self.role_service.get_role_name_by_id(user.role_id) if user.role_id else "user"
             token = create_access_token(user.id, role_name)
-            return LoginUserResponseSchema(access_token=token, token_type="Bearer", role=role_name)
+            return LoginUserByGoogleResponseSchema(access_token=token, token_type="Bearer", role=role_name, google_refresh_token=google_refresh_token)
 
     async def refresh_google_token(self, refresh_token: str):
         if not refresh_token:

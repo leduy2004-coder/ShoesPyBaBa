@@ -45,6 +45,12 @@ class LoginUserResponseSchema(BaseModel):
     token_type: str = "Bearer"
     role: Optional[str] = None
 
+class LoginUserByGoogleResponseSchema(BaseModel):
+    access_token: str
+    token_type: str = "Bearer"
+    role: Optional[str] = None
+    google_refresh_token: str
+
 class TokenPayload(BaseModel):
     user_id: int
     exp: int
