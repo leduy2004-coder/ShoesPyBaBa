@@ -40,6 +40,10 @@ class AuthService:
     
         if not verify_password(data.password, user.password):
             raise HTTPException(status_code=401, detail="Invalid email or password")
+        
+        if user.status == 0:
+            raise HTTPException(status_code=403, detail="Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.")
+
         logger.info("Login attempt with email=%s", user.role_id)
 
         role_name = self.role_service.get_role_name_by_id(user.role_id) if user.role_id else "user"
@@ -95,8 +99,11 @@ class AuthService:
                 )
                 user = self.user_repo.create_user(user)
             else:
+                if user.status == 0:
+                    raise HTTPException(status_code=403, detail="Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.")
+
                 # Update avatar if changed - logic kept from UserService
-                 if userinfo.get("picture") and user.avatar != userinfo.get("picture"):
+                if userinfo.get("picture") and user.avatar != userinfo.get("picture"):
                     user.avatar = userinfo.get("picture")
                     self.db.commit() # AuthRepo doesn't have update method yet, using db directly or add update to repo
                     self.db.refresh(user)

@@ -10,8 +10,7 @@ class UserRepository:
         return (
             self.db.query(User)
             .filter(
-                User.email == email,
-                User.status == 1
+                User.email == email
             )
             .first()
         )

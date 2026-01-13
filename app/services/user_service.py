@@ -137,4 +137,31 @@ class UserService:
             ward=address.ward,
             street_address=address.street_address
         )
+
+    async def get_all_users(self, page: int = 1, limit: int = 20):
+        skip = (page - 1) * limit
+        total = self.db.query(User).count()
+        users = self.db.query(User).offset(skip).limit(limit).all()
+        return {
+            "items": users,
+            "total": total,
+            "page": page,
+            "size": limit
+        }
+
+    def update_user_status(self, user_id: int, status: int):
+        user = self.user_repo.get_by_id(user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        user.status = status
+        self.db.commit()
+        return user
+
+    def delete_user(self, user_id: int):
+        user = self.user_repo.get_by_id(user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        self.db.delete(user)
+        self.db.commit()
+        return True
         

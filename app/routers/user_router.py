@@ -1,6 +1,6 @@
 
 from fastapi import APIRouter
-from app.schemas.user_schemas import RegisterUserSchema, UserSchema, LoginUserSchema, LoginUserResponseSchema, UserProfileUpdate, UserProfileResponse
+from app.schemas.user_schemas import RegisterUserSchema, UserSchema, LoginUserSchema, LoginUserResponseSchema, UserProfileUpdate, UserProfileResponse, UserPaginationSchema
 from app.schemas.common_schema import ResponseSchema
 from app.middleware.authenticate import authenticate 
 from app.models.user_model import User
@@ -121,3 +121,56 @@ def update_user_profile(
 #             message=f"Đổi mật khẩu thất bại: {str(e)}",
 #             data=None
 #         )
+
+@router.get("/admin/all", tags=["admin"], response_model=DataResponse[UserPaginationSchema])
+async def get_all_users(
+    page: int = 1,
+    limit: int = 20,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(current_user_dependency)
+):
+    if current_user.role_id != 1:
+        raise HTTPException(status_code=403, detail="Permission denied")
+    
+    user_service = UserService(db)
+    result = await user_service.get_all_users(page, limit)
+    return DataResponse.custom_response(
+        code="200",
+        message="Get all users success",
+        data=result
+    )
+
+@router.put("/admin/{user_id}/status", tags=["admin"], response_model=DataResponse)
+async def update_user_status(
+    user_id: int,
+    status: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(current_user_dependency)
+):
+    if current_user.role_id != 1:
+        raise HTTPException(status_code=403, detail="Permission denied")
+    
+    user_service = UserService(db)
+    updated_user = user_service.update_user_status(user_id, status)
+    return DataResponse.custom_response(
+        code="200",
+        message="Update user status success",
+        data=None
+    )
+
+@router.delete("/admin/{user_id}", tags=["admin"], response_model=DataResponse)
+async def delete_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(current_user_dependency)
+):
+    if current_user.role_id != 1:
+        raise HTTPException(status_code=403, detail="Permission denied")
+    
+    user_service = UserService(db)
+    user_service.delete_user(user_id)
+    return DataResponse.custom_response(
+        code="200",
+        message="Delete user success",
+        data=None
+    )

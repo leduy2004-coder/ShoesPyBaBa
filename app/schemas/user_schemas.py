@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic import field_validator
-from typing import Optional
+from typing import Optional, List
 from enum import Enum
 import re
 
@@ -8,12 +8,18 @@ class UserSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     
     id: int
-    full_name: str
+    full_name: Optional[str] = None
     email: str
     gender: Optional[str] = None
     phone_number: Optional[str] = None
     role_id: Optional[int] = None
     status: int
+
+class UserPaginationSchema(BaseModel):
+    items: List[UserSchema]
+    total: int
+    page: int
+    size: int
 
 class RegisterUserSchema(BaseModel):
     full_name: str

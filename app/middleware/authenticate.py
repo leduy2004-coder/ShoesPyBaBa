@@ -1,6 +1,6 @@
 
 import jwt
-from app.core import security
+from app.core.security import security
 from app.core.config import settings
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials 
