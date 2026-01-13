@@ -22,17 +22,25 @@ async def register_user(data: RegisterUserSchema, db: Session = Depends(get_db))
     except HTTPException as e:
         return DataResponse.custom_response(code=str(e.status_code), message=e.detail, data=None)
     except Exception as e:
-        # return DataResponse.custom_response(code="500", message="Register user failed", data=None)
+       
         return DataResponse.custom_response(code="500", message=str(e), data=None)
 
-@router.post("/verify-otp", tags=["auth"], description="Verify OTP for registration", response_model=DataResponse[UserSchema])
-async def verify_otp(data: VerifyOtpSchema, db: Session = Depends(get_db)):
+@router.post("/verify-otp", tags=["auth"], description="Verify OTP", response_model=DataResponse[UserSchema])
+async def verify_otp(
+    data: VerifyOtpSchema, 
+    is_register: bool = True, 
+    db: Session = Depends(get_db)
+):
     try:
-        user = await AuthService.verify_otp(data.email, data.otp, db)
-        return DataResponse.custom_response(code="200", message="Email verified successfully", data=user)
+        user = await AuthService.verify_otp(data.email, data.otp, db, is_register=is_register)
+        
+        return DataResponse.custom_response(
+            code="200", 
+            message="OTP verified successfully", 
+            data=user
+        )
     except HTTPException as e:
         return DataResponse.custom_response(code=str(e.status_code), message=e.detail, data=None)
-
 @router.post("/login", tags=["auth"], description="Login a user", response_model=DataResponse[LoginUserResponseSchema])
 async def login_user(data: LoginUserSchema, db: Session = Depends(get_db)):
     auth_service = AuthService(db)

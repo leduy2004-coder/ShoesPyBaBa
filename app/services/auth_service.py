@@ -167,7 +167,7 @@ class AuthService:
         return user
 
     @staticmethod
-    async def verify_otp(email: str, otp: str, db: Session):
+    async def verify_otp(email: str, otp: str, db: Session, is_register: bool = True):
         user = db.query(User).filter(User.email == email).first()
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
@@ -178,34 +178,30 @@ class AuthService:
         if user.otp_expired_at < datetime.now():
             raise HTTPException(status_code=400, detail="OTP expired")
         
-        # Verify user
         user.status = 1
-        user.otp_code = None
-        user.otp_expired_at = None
-        user.otp_type = None
-        db.commit()
         
+        if is_register:
+            user.otp_code = None
+            user.otp_expired_at = None
+            user.otp_type = None
+            
+        db.commit()
         return user
     
     @staticmethod
     async def reset_password_with_otp(email: str, otp: str, new_password: str, db: Session):
-        # 1. Tìm user
         user = db.query(User).filter(User.email == email).first()
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
-        
-        # 2. ĐỐI CHIẾU OTP (Đáp ứng đúng yêu cầu của bạn)
+    
         if user.otp_code != otp:
             raise HTTPException(status_code=400, detail="Mã OTP không chính xác")
-        
-        # 3. Kiểm tra hết hạn
+    
         if user.otp_expired_at < datetime.now():
             raise HTTPException(status_code=400, detail="Mã OTP đã hết hạn")
         
-        # 4. Cập nhật mật khẩu mới
         user.password = hash_password(new_password)
-        
-        # 5. Xóa OTP sau khi dùng xong
+    
         user.otp_code = None
         user.otp_expired_at = None
         
