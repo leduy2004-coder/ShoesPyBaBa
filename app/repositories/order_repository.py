@@ -37,7 +37,7 @@ class OrderRepository:
             order_item = OrderItem(
                 order_id=order_id,
                 product_id=cart_item.product_id,
-                product_name="",  # Will be filled by service
+                product_name="", 
                 size=cart_item.size,
                 color=cart_item.color,
                 quantity=cart_item.quantity,
@@ -51,17 +51,14 @@ class OrderRepository:
     
     @staticmethod
     def get_order_by_id(db: Session, order_id: int) -> Optional[Order]:
-        """Get order by ID"""
         return db.query(Order).filter(Order.id == order_id).first()
     
     @staticmethod
     def get_order_items(db: Session, order_id: int) -> List[OrderItem]:
-        """Get all items for an order"""
         return db.query(OrderItem).filter(OrderItem.order_id == order_id).all()
     
     @staticmethod
     def get_user_orders(db: Session, user_id: int, page: int = 1, limit: int = 10) -> tuple[List[Order], int]:
-        """Get user's order history with pagination"""
         query = db.query(Order).filter(Order.user_id == user_id).order_by(desc(Order.created_at))
         
         total = query.count()
@@ -71,7 +68,6 @@ class OrderRepository:
     
     @staticmethod
     def update_order_status(db: Session, order_id: int, status: str) -> Optional[Order]:
-        """Update order status"""
         order = OrderRepository.get_order_by_id(db, order_id)
         if order:
             order.status = status
@@ -81,12 +77,11 @@ class OrderRepository:
     
     @staticmethod
     def update_payment_status(db: Session, order_id: int, payment_status: str) -> Optional[Order]:
-        """Update payment status"""
         order = OrderRepository.get_order_by_id(db, order_id)
         if order:
             order.payment_status = payment_status
             if payment_status == "completed":
-                order.status = "processing"  # Move to processing when payment is completed
+                order.status = "processing"
             db.commit()
             db.refresh(order)
         return order
@@ -95,7 +90,6 @@ class OrderRepository:
     def search_orders(db: Session, user_id: Optional[int] = None, status: Optional[str] = None,
                      payment_status: Optional[str] = None, start_date: Optional[datetime] = None,
                      end_date: Optional[datetime] = None, page: int = 1, limit: int = 10) -> tuple[List[Order], int]:
-        """Search orders with filters"""
         query = db.query(Order)
         
         if user_id:

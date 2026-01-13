@@ -16,11 +16,8 @@ import math
 
 
 class OrderService:
-    """Service for order business logic"""
-
     @staticmethod
     def _map_order_item(item):
-        """Helper to map order item and include product info"""
         product_image = None
         if item.product and item.product.image_urls and len(item.product.image_urls) > 0:
             first_image = item.product.image_urls[0]
@@ -44,8 +41,7 @@ class OrderService:
     @staticmethod
     def create_order_from_cart(db: Session, user_id: int, data: CreateOrderFromCartSchema, 
                               payment_intent_id: Optional[str] = None) -> OrderSchema:
-        """Create order from user's cart"""
-        # Get user's cart
+        # Get user cart
         cart = CartRepository.get_user_cart(db, user_id)
         cart_items = CartRepository.get_cart_items(db, cart.id)
         
@@ -56,13 +52,9 @@ class OrderService:
             )
         
         # Calculate total using current product prices
-        total_amount = 0
-        for cart_item in cart_items:
-            product = db.query(Product).filter(Product.id == cart_item.product_id).first()
-            if product:
-                total_amount += cart_item.quantity * product.price
-        
-        # Create order (always use stripe payment)
+        total_amount = CartRepository.get_cart_total(db, cart.id)
+
+        # Create order 
         order = OrderRepository.create_order(
             db=db,
             user_id=user_id,
@@ -84,7 +76,7 @@ class OrderService:
                     size=cart_item.size,
                     color=cart_item.color,
                     quantity=cart_item.quantity,
-                    price_at_purchase=product.price  # Use current price at time of order
+                    price_at_purchase=product.price 
                 )
                 db.add(order_item)
                 

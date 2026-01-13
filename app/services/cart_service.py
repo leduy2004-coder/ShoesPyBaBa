@@ -64,59 +64,70 @@ class CartService:
     
     @staticmethod
     def add_to_cart(db: Session, user_id: int, data: AddToCartSchema):
-        """Add or update (increment) item in cart with validation"""
-        # Validate product exists
-        product = db.query(Product).filter(Product.id == data.product_id).first()
+        # 1. Validate required variant attributes
+        if not data.size or not data.color:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Size and color are required"
+            )
+
+        # 2. Validate product exists
+        product = ProductRepository(db).get_by_id(data.product_id)
         if not product:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Product not found"
             )
-        
-        # Check if product is active
+
+        # 3. Check product status
         if product.status != "active":
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Product is not available"
             )
-        
-        # Get or create cart to check existing quantity
+
+        # 4. Get cart & calculate final quantity
         cart = CartRepository.get_user_cart(db, user_id)
-        
-        # Calculate new quantity to validate stock
+
         final_quantity = data.quantity
-        existing_item = CartRepository.get_cart_item(db, cart.id, data.product_id, data.size, data.color)
+        existing_item = CartRepository.get_cart_item(
+            db, cart.id, data.product_id, data.size, data.color
+        )
         if existing_item:
             final_quantity += existing_item.quantity
 
-        # Validate variant if size/color specified
-        if data.size or data.color:
-            if not product.variants:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Product has no variants"
-                )
-            
-            # check variant exist and have stock
-            variant_found = False
-            for variant in product.variants:
-                if (not data.size or variant.get('size') == data.size) and \
-                   (not data.color or variant.get('color') == data.color):
-                    if variant.get('stock_quantity', 0) < final_quantity:
-                        raise HTTPException(
-                            status_code=status.HTTP_400_BAD_REQUEST,
-                            detail=f"Insufficient stock. Available: {variant.get('stock_quantity', 0)}"
-                        )
-                    variant_found = True
-                    break
-            
-            if not variant_found:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Variant not found"
-                )
-        
-        # Add or update item in cart
+        # 5. Product must have variants
+        if not product.variants:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Product has no variants"
+            )
+
+        # 6. Find matching variant
+        matched_variant = next(
+            (
+                v for v in product.variants
+                if v.get("size") == data.size
+                and v.get("color") == data.color
+            ),
+            None
+        )
+
+        if not matched_variant:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Variant not found"
+            )
+
+        # 7. Check stock
+        stock = matched_variant.get("stock_quantity", 0)
+        if stock < final_quantity:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Insufficient stock. Available: {stock}"
+            )
+
+        # 8. Add or update cart item
         CartRepository.add_item_to_cart(
             db=db,
             cart_id=cart.id,
@@ -125,8 +136,9 @@ class CartService:
             size=data.size,
             color=data.color
         )
-        
+
         return CartService.get_user_cart(db, user_id)
+
     
     @staticmethod
     def remove_cart_item(db: Session, user_id: int, item_id: int):
